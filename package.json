@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "A SceneryStack simulation: Plate Tectonics.",
+  "description": "Explore Earth's tectonic plates: boundaries, motion, earthquakes and volcanoes.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
