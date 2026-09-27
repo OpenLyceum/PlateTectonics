@@ -51,6 +51,11 @@ that deepens as it cools. Combinations that have no physical answer, such as two
 identical ocean plates converging, are refused rather than guessed at. Ported from the
 "Plate Motion" tab; transform boundaries are out of scope, being motion into the page.
 
+**Deep Time** — replay a published plate reconstruction from the present back to
+250 Ma (Pangaea), one frame every 5 million years, from Müller et al. (2019).
+This is a playback of a model fitted to the geological record. It is separate
+from the Earth screen's ±50 Myr run, which only extrapolates today's velocities.
+
 The science, the sources and the model's limits are documented in
 [`doc/model.md`](doc/model.md); the code is documented in
 [`doc/implementation-notes.md`](doc/implementation-notes.md).
