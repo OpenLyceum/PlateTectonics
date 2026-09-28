@@ -38,21 +38,25 @@ onReadyToLaunch(() => {
 
   const screens = [
     new EarthScreen(simPreferences, {
+      // The screen name Property updates automatically when the locale changes
       name: stringManager.getScreenNames().earthStringProperty,
       tandem: Tandem.ROOT.createTandem("earthScreen"),
       backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
     }),
     new CrustScreen(simPreferences, {
+      // The screen name Property updates automatically when the locale changes
       name: stringManager.getScreenNames().crustStringProperty,
       tandem: Tandem.ROOT.createTandem("crustScreen"),
       backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
     }),
     new PlateMotionScreen(simPreferences, {
+      // The screen name Property updates automatically when the locale changes
       name: stringManager.getScreenNames().plateMotionStringProperty,
       tandem: Tandem.ROOT.createTandem("plateMotionScreen"),
       backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
     }),
     new DeepTimeScreen({
+      // The screen name Property updates automatically when the locale changes
       name: stringManager.getScreenNames().deepTimeStringProperty,
       tandem: Tandem.ROOT.createTandem("deepTimeScreen"),
       backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
