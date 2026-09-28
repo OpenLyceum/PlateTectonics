@@ -91,7 +91,134 @@ Forked from [SceneryStackTemplate](https://github.com/OpenLyceum/SceneryStackTem
 | `scripts/data/` | Fetch cache, GeoTIFF and netCDF readers, geodesy, contouring, emitters |
 | `scripts/data/gplates.ts` + `gplates/resolve.py` | Resolves the deep-time model via pyGPlates (build-time only) |
 
-## Working on this sim
+### Common components
+
+### PlateTectonicsPanel
+
+Every control panel and info box uses `PlateTectonicsPanel` so default/projector color
+switching is automatic:
+
+```typescript
+import { PlateTectonicsPanel } from "../../common/PlateTectonicsPanel.js";
+const panel = new PlateTectonicsPanel(content, { minWidth: CONTROL_PANEL_WIDTH });
+```
+
+### PlateTectonicsButtonOptions
+
+SceneryStack's push/round buttons default to a 3-D look; every button here is flat.
+Spread `FLAT_RESET_ALL_BUTTON_OPTIONS`, `FLAT_RECTANGULAR_BUTTON_OPTIONS` or
+`FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS` into the relevant options object, and use
+`PLATE_TECTONICS_COMBO_BOX_OPTIONS` + `LIGHT_SURFACE_TEXT_FILL` for combo boxes.
+Anything drawn on a light control surface (checkbox ticks, combo items) must use
+`controlSurfaceTextColorProperty`, not `textColorProperty`.
+
+### TimeModel
+
+`EarthModel` composes `TimeModel` for play/pause and elapsed wall-clock time.
+The *reconstruction* clock is a separate `timeMillionsOfYearsProperty`, advanced in
+`step()` at `millionYearsPerSecond` and clamped to ±50 Myr.
+
+## Model
+
+Physics and behavior: `doc/model.md`.
+
+## Accessibility
+
+The three required layers are wired up:
+
+- `EarthScreenSummaryContent` builds a **live** `currentDetails` paragraph
+  from the model — globe or flat map, layers, depth filter, geological time.
+- Every control has an `accessibleName` from the `a11y` string group; several have
+  `accessibleHelpText`.
+- `EarthScreenView` sets an explicit `pdomOrder` ending at Reset All, and
+  `EarthKeyboardHelpContent` documents sliders, moving the Earth and basic
+  actions.
+
+A11y strings live under `a11y.earth` in each locale JSON, exposed via
+`StringManager.getEarthA11yStrings()`. Full checklist:
+[Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
+
+## Compliance carve-outs
+
+- **Generated data is excluded from Biome** (`biome.json` → `files.includes`). Those
+  files are machine-formatted by `scripts/data/emit.ts` to keep numeric arrays compact.
+- **Canvas painting instead of Scenery nodes** for the map and the cross-sections, for
+  the performance reason above. The interactive controls are all standard sun components.
+- **Hardcoded colors:** `shadeToCSS` in `src/common/view/QuadRenderer.ts` builds `rgb(...)` /
+  `rgba(...)` strings from a `Color` already chosen by the density/temperature ramps (or a
+  `ProfileColorProperty`). It is a format helper for flat-shaded faces, not a palette.
+
+
+### `package.json` overrides
+
+JSON cannot carry comments, so the rationale for forced transitive pins lives here. Prefer
+**tilde (`~`) or exact** versions — caret (`^`) lets minors drift under what is meant to be a
+hard pin. Dependabot ignores these three names (see `.github/dependabot.yml`) so it does not
+open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins them upstream.
+
+| Override | Pin | Why |
+|---|---|---|
+| `lodash` | `~4.18.1` | SceneryStack declares `~4.17.12`. Bump clears Dependabot/npm advisories patched in 4.18.x (e.g. GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh). |
+| `three` | `~0.125.2` | SceneryStack declares `^0.104.0`. Floor is 0.125.0 for GHSA-fq6p-x6j3-cmmq (ReDoS). Staying on the 0.125 line avoids a larger API jump; **0.125.x still has open CVEs** (e.g. XSS GHSA-7vvq-7r29-5vg3, fixed only in ≥0.137.0). Remove this override if/when SceneryStack stops depending on `three` or pins a patched line itself. LightPropagation keeps a higher `three` pin — do not force 0.125 there. |
+| `brace-expansion` | `~5.0.9` | Transitive via `vite-plugin-pwa` / Workbox. Clears npm audit (originally GHSA-mh99-v99m-4gvg; keep ≥5.0.9 for GHSA-rgw5-rvv9-x895). |
+
+## Testing
+
+| Path | Purpose |
+|---|---|
+| `tests/PlateReconstruction.test.ts` | Euler-pole rotation; plate speeds against published values |
+| `tests/DeepTimeReconstruction.test.ts` | Deep time as claims about the Earth: India's drift, Pangaea at 250 Ma, the identity row |
+| `tests/PlateEvolution.test.ts` | The mosaic staying closed; what each boundary rides; plate areas |
+| `tests/EarthModel.test.ts` | Layer state, depth bands, time clock, reset |
+| `tests/MapProjection.test.ts` | Projection round trips, 2:1 viewport, motion-arrow bearings |
+| `tests/GlobeProjection.test.ts` | Orthographic projection and its inverse, visibility, bearings, camera |
+| `tests/geophysicalData.test.ts` | Integrity of the generated datasets |
+| `tests/Isostasy.test.ts` | Airy elevation, both branches, and the density expression |
+| `tests/EarthStructure.test.ts` | PREM profile and the layer boundaries built on it |
+| `tests/CrossSectionScale.test.ts` | Two-band mapping, monotonicity, round trips |
+| `tests/EarthCurvature.test.ts` | The bend onto the sphere, and its inverse |
+| `tests/SceneCamera.test.ts` | Perspective projection, picking ray, framing solver |
+| `tests/QuadRenderer.test.ts` | Depth sort, layer override, culling, flat shading |
+| `tests/EarthBlockNode.test.ts` | The block's projection and its front-face inverse |
+| `tests/TerrainColors.test.ts` | The elevation ramp on the block's surface |
+| `tests/SectionPlacement.test.ts` | Both views agreeing about what a section point means |
+| `tests/RangeLabelNode.test.ts` | Extent geometry in both views, the off-viewport clamp, the collapsed style |
+| `tests/SectionRulerNode.test.ts` | Tick numbering and the ruler surviving a section that gives it no room |
+| `tests/PlateMotionLabelsNode.test.ts` | Drop zones as drag targets: which side a release lands on, in both views |
+| `tests/EarthMaterial.test.ts` | The two colour ramps and the combined mode |
+| `tests/IsostaticRelaxation.test.ts` | Convergence, no overshoot, frame-rate independence |
+| `tests/CrustModel.test.ts` | Slider → density → elevation chain, probe, reset |
+| `tests/BoundaryRules.test.ts` | All 9 pairings × 2 motions; which side subducts |
+| `tests/SlabCurve.test.ts` | Arc continuity and arc-length parameterisation |
+| `tests/PlateGeometry.test.ts` | Rifting, subduction and collision as claims about the Earth |
+| `tests/PlateMotionModel.test.ts` | The three-state machine and the clock |
+| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression |
+
+Unit tests live only under root `tests/`, mirroring `src/`.
+
+## Commands
+
+```bash
+npm run lint && npm run check && npm run build && npm test
+```
+
+`npm run release` runs `npm test` before the version bump, and `src/init.ts` reads `version` from `package.json`, so the About dialog always matches the release.
+
+| Command | Description |
+|---|---|
+| `npm start` / `npm run dev` | Vite dev server |
+| `npm run build` | Type-check + production build |
+| `npm run build:single` | Single-file build mode |
+| `npm run build-data` | Regenerate every dataset from its public source (uses the network) |
+| `npm run check` | TypeScript (`tsc --noEmit` + scripts + tests projects) |
+| `npm run lint` / `npm run fix` | Biome check / auto-fix |
+| `npm test` | Vitest unit tests |
+| `npm run test:fuzz` / `test:fuzz:quick` | Playwright fuzz smoke |
+| `npm run icons` | Regenerate PWA icons from `public/icons/icon.svg` |
+
+## Development notes
+
+### Working on this sim
 
 ### The generated data
 
@@ -235,128 +362,7 @@ independent. Its young end deliberately sits near the divergent-boundary red —
 youngest crust *is* the crust at the ridge — and the two are kept apart by line width
 and draw order instead of by hue.
 
-## Common components
-
-### PlateTectonicsPanel
-
-Every control panel and info box uses `PlateTectonicsPanel` so default/projector color
-switching is automatic:
-
-```typescript
-import { PlateTectonicsPanel } from "../../common/PlateTectonicsPanel.js";
-const panel = new PlateTectonicsPanel(content, { minWidth: CONTROL_PANEL_WIDTH });
-```
-
-### PlateTectonicsButtonOptions
-
-SceneryStack's push/round buttons default to a 3-D look; every button here is flat.
-Spread `FLAT_RESET_ALL_BUTTON_OPTIONS`, `FLAT_RECTANGULAR_BUTTON_OPTIONS` or
-`FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS` into the relevant options object, and use
-`PLATE_TECTONICS_COMBO_BOX_OPTIONS` + `LIGHT_SURFACE_TEXT_FILL` for combo boxes.
-Anything drawn on a light control surface (checkbox ticks, combo items) must use
-`controlSurfaceTextColorProperty`, not `textColorProperty`.
-
-### TimeModel
-
-`EarthModel` composes `TimeModel` for play/pause and elapsed wall-clock time.
-The *reconstruction* clock is a separate `timeMillionsOfYearsProperty`, advanced in
-`step()` at `millionYearsPerSecond` and clamped to ±50 Myr.
-
-## Accessibility
-
-The three required layers are wired up:
-
-- `EarthScreenSummaryContent` builds a **live** `currentDetails` paragraph
-  from the model — globe or flat map, layers, depth filter, geological time.
-- Every control has an `accessibleName` from the `a11y` string group; several have
-  `accessibleHelpText`.
-- `EarthScreenView` sets an explicit `pdomOrder` ending at Reset All, and
-  `EarthKeyboardHelpContent` documents sliders, moving the Earth and basic
-  actions.
-
-A11y strings live under `a11y.earth` in each locale JSON, exposed via
-`StringManager.getEarthA11yStrings()`. Full checklist:
-[Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
-
-## Compliance carve-outs
-
-- **Generated data is excluded from Biome** (`biome.json` → `files.includes`). Those
-  files are machine-formatted by `scripts/data/emit.ts` to keep numeric arrays compact.
-- **Canvas painting instead of Scenery nodes** for the map and the cross-sections, for
-  the performance reason above. The interactive controls are all standard sun components.
-- **Hardcoded colors:** `shadeToCSS` in `src/common/view/QuadRenderer.ts` builds `rgb(...)` /
-  `rgba(...)` strings from a `Color` already chosen by the density/temperature ramps (or a
-  `ProfileColorProperty`). It is a format helper for flat-shaded faces, not a palette.
-
-
-### `package.json` overrides
-
-JSON cannot carry comments, so the rationale for forced transitive pins lives here. Prefer
-**tilde (`~`) or exact** versions — caret (`^`) lets minors drift under what is meant to be a
-hard pin. Dependabot ignores these three names (see `.github/dependabot.yml`) so it does not
-open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins them upstream.
-
-| Override | Pin | Why |
-|---|---|---|
-| `lodash` | `~4.18.1` | SceneryStack declares `~4.17.12`. Bump clears Dependabot/npm advisories patched in 4.18.x (e.g. GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh). |
-| `three` | `~0.125.2` | SceneryStack declares `^0.104.0`. Floor is 0.125.0 for GHSA-fq6p-x6j3-cmmq (ReDoS). Staying on the 0.125 line avoids a larger API jump; **0.125.x still has open CVEs** (e.g. XSS GHSA-7vvq-7r29-5vg3, fixed only in ≥0.137.0). Remove this override if/when SceneryStack stops depending on `three` or pins a patched line itself. LightPropagation keeps a higher `three` pin — do not force 0.125 there. |
-| `brace-expansion` | `~5.0.9` | Transitive via `vite-plugin-pwa` / Workbox. Clears npm audit (originally GHSA-mh99-v99m-4gvg; keep ≥5.0.9 for GHSA-rgw5-rvv9-x895). |
-
-## Testing
-
-| Path | Purpose |
-|---|---|
-| `tests/PlateReconstruction.test.ts` | Euler-pole rotation; plate speeds against published values |
-| `tests/DeepTimeReconstruction.test.ts` | Deep time as claims about the Earth: India's drift, Pangaea at 250 Ma, the identity row |
-| `tests/PlateEvolution.test.ts` | The mosaic staying closed; what each boundary rides; plate areas |
-| `tests/EarthModel.test.ts` | Layer state, depth bands, time clock, reset |
-| `tests/MapProjection.test.ts` | Projection round trips, 2:1 viewport, motion-arrow bearings |
-| `tests/GlobeProjection.test.ts` | Orthographic projection and its inverse, visibility, bearings, camera |
-| `tests/geophysicalData.test.ts` | Integrity of the generated datasets |
-| `tests/Isostasy.test.ts` | Airy elevation, both branches, and the density expression |
-| `tests/EarthStructure.test.ts` | PREM profile and the layer boundaries built on it |
-| `tests/CrossSectionScale.test.ts` | Two-band mapping, monotonicity, round trips |
-| `tests/EarthCurvature.test.ts` | The bend onto the sphere, and its inverse |
-| `tests/SceneCamera.test.ts` | Perspective projection, picking ray, framing solver |
-| `tests/QuadRenderer.test.ts` | Depth sort, layer override, culling, flat shading |
-| `tests/EarthBlockNode.test.ts` | The block's projection and its front-face inverse |
-| `tests/TerrainColors.test.ts` | The elevation ramp on the block's surface |
-| `tests/SectionPlacement.test.ts` | Both views agreeing about what a section point means |
-| `tests/RangeLabelNode.test.ts` | Extent geometry in both views, the off-viewport clamp, the collapsed style |
-| `tests/SectionRulerNode.test.ts` | Tick numbering and the ruler surviving a section that gives it no room |
-| `tests/PlateMotionLabelsNode.test.ts` | Drop zones as drag targets: which side a release lands on, in both views |
-| `tests/EarthMaterial.test.ts` | The two colour ramps and the combined mode |
-| `tests/IsostaticRelaxation.test.ts` | Convergence, no overshoot, frame-rate independence |
-| `tests/CrustModel.test.ts` | Slider → density → elevation chain, probe, reset |
-| `tests/BoundaryRules.test.ts` | All 9 pairings × 2 motions; which side subducts |
-| `tests/SlabCurve.test.ts` | Arc continuity and arc-length parameterisation |
-| `tests/PlateGeometry.test.ts` | Rifting, subduction and collision as claims about the Earth |
-| `tests/PlateMotionModel.test.ts` | The three-state machine and the clock |
-| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression |
-
-Unit tests live only under root `tests/`, mirroring `src/`.
-
-## Commands
-
-```bash
-npm run lint && npm run check && npm run build && npm test
-```
-
-`npm run release` runs `npm test` before the version bump, and `src/init.ts` reads `version` from `package.json`, so the About dialog always matches the release.
-
-| Command | Description |
-|---|---|
-| `npm start` / `npm run dev` | Vite dev server |
-| `npm run build` | Type-check + production build |
-| `npm run build:single` | Single-file build mode |
-| `npm run build-data` | Regenerate every dataset from its public source (uses the network) |
-| `npm run check` | TypeScript (`tsc --noEmit` + scripts + tests projects) |
-| `npm run lint` / `npm run fix` | Biome check / auto-fix |
-| `npm test` | Vitest unit tests |
-| `npm run test:fuzz` / `test:fuzz:quick` | Playwright fuzz smoke |
-| `npm run icons` | Regenerate PWA icons from `public/icons/icon.svg` |
-
-## PWA
+### PWA
 
 After `npm run build`, the sim is installable offline via Workbox
 (`dist/manifest.webmanifest`). The relief raster is a build-time asset, so the offline
