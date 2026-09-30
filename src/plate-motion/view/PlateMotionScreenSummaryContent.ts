@@ -11,6 +11,7 @@
  */
 
 import { DerivedStringProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { createSectionViewDescription } from "../../common/view/sectionViewDescription.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -113,7 +114,7 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
         if (!started) {
           return idle;
         }
-        return finished ? done.replace("{{value}}", limit.toFixed(0)) : running.replace("{{value}}", tMyr.toFixed(0));
+        return finished ? done.replace("{{value}}", toFixed(limit, 0)) : running.replace("{{value}}", toFixed(tMyr, 0));
       },
     );
 

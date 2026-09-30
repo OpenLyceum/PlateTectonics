@@ -19,7 +19,7 @@
  */
 
 import { DerivedProperty, DerivedStringProperty, type TReadOnlyProperty } from "scenerystack/axon";
-import { Dimension2 } from "scenerystack/dot";
+import { Dimension2, toFixed } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, PlayPauseButton, StepForwardButton } from "scenerystack/scenery-phet";
@@ -62,7 +62,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
 
     const elapsed = new DerivedStringProperty(
       [model.timeMillionsOfYearsProperty, motion.elapsedPatternStringProperty],
-      (tMyr: number, pattern: string) => pattern.replace("{{value}}", tMyr.toFixed(0)),
+      (tMyr: number, pattern: string) => pattern.replace("{{value}}", toFixed(tMyr, 0)),
     );
 
     const playPauseButton = new PlayPauseButton(model.timer.isPlayingProperty, {

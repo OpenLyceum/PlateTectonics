@@ -27,7 +27,8 @@
  */
 
 import { Multilink } from "scenerystack/axon";
-import { CanvasNode, type CanvasNodeOptions, type Color } from "scenerystack/scenery";
+import type { Bounds2 } from "scenerystack/dot";
+import { CanvasNode, type Color, Node, type NodeOptions } from "scenerystack/scenery";
 import { DeepTimeReconstruction, IDENTITY_ROTATION_SLOT } from "../../common/DeepTimeReconstruction.js";
 import type { BoundaryType } from "../../common/data/dataTypes.js";
 import { HISTORY_COASTLINES } from "../../common/data/generated/plateHistoryData.js";
@@ -43,22 +44,46 @@ const TWO_PI = 2 * Math.PI;
 /** Opacity of the deforming-belt wash, below the plate wash so it reads as texture. */
 const DEFORMING_FILL_OPACITY = 0.5;
 
-export type DeepTimeCanvasNodeOptions = CanvasNodeOptions;
+export type DeepTimeCanvasNodeOptions = NodeOptions;
 
-export class DeepTimeCanvasNode extends CanvasNode {
+/**
+ * One scenery canvas layer. The plate wash is its own layer so overlapping plate
+ * polygons can be filled opaquely and then composited once at PLATE_FILL_OPACITY.
+ */
+class DiscCanvasLayer extends CanvasNode {
+  private readonly paint: (context: CanvasRenderingContext2D) => void;
+
+  public constructor(bounds: Bounds2, paint: (context: CanvasRenderingContext2D) => void) {
+    super({ canvasBounds: bounds, pickable: false });
+    this.paint = paint;
+  }
+
+  public override paintCanvas(context: CanvasRenderingContext2D): void {
+    this.paint(context);
+  }
+}
+
+export class DeepTimeCanvasNode extends Node {
   private readonly model: DeepTimeModel;
   private readonly globe: GlobeProjection;
   private readonly reconstruction = new DeepTimeReconstruction();
   private readonly painter: GlobeFeaturePainter;
-
-  /** Offscreen canvas the plate wash is composited on; see {@link paintPlates}. */
-  private washCanvas: HTMLCanvasElement | null = null;
+  private readonly oceanLayer: DiscCanvasLayer;
+  private readonly plateLayer: DiscCanvasLayer;
+  private readonly overlayLayer: DiscCanvasLayer;
 
   public constructor(model: DeepTimeModel, projection: GlobeProjection, options?: DeepTimeCanvasNodeOptions) {
-    super({ canvasBounds: projection.viewBounds, ...options });
+    super(options);
     this.model = model;
     this.globe = projection;
     this.painter = new GlobeFeaturePainter(projection, this.reconstruction);
+
+    const bounds = projection.viewBounds;
+    this.oceanLayer = new DiscCanvasLayer(bounds, (context) => this.paintOcean(context));
+    this.plateLayer = new DiscCanvasLayer(bounds, (context) => this.paintPlateFills(context));
+    this.plateLayer.opacity = PLATE_FILL_OPACITY;
+    this.overlayLayer = new DiscCanvasLayer(bounds, (context) => this.paintOverlay(context));
+    this.children = [this.oceanLayer, this.plateLayer, this.overlayLayer];
 
     Multilink.multilinkAny(
       [
@@ -77,63 +102,55 @@ export class DeepTimeCanvasNode extends CanvasNode {
         PlateTectonicsColors.transformBoundaryColorProperty,
         ...PlateTectonicsColors.platePaletteColorProperties,
       ],
-      () => this.invalidatePaint(),
+      () => {
+        this.plateLayer.visible = model.showPlatesProperty.value;
+        this.oceanLayer.invalidatePaint();
+        this.plateLayer.invalidatePaint();
+        this.overlayLayer.invalidatePaint();
+      },
     );
   }
 
-  /**
-   * Offscreen canvas the plate wash is composited on, created once and reused. Returns
-   * null if the browser will not give a 2-D context, in which case the wash is skipped
-   * and the boundaries and continents still draw.
-   */
-  private plateWashLayer(width: number, height: number): CanvasRenderingContext2D | null {
-    const canvas = this.washCanvas ?? document.createElement("canvas");
-    this.washCanvas = canvas;
-    const pixelWidth = Math.ceil(width);
-    const pixelHeight = Math.ceil(height);
-    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-      canvas.width = pixelWidth;
-      canvas.height = pixelHeight;
+  private clipToDisc(context: CanvasRenderingContext2D): void {
+    context.beginPath();
+    context.arc(this.globe.centerX, this.globe.centerY, this.globe.radius, 0, TWO_PI);
+    context.clip();
+  }
+
+  private paintOcean(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.clipToDisc(context);
+    context.fillStyle = PlateTectonicsColors.oceanColorProperty.value.toCSS();
+    context.beginPath();
+    context.arc(this.globe.centerX, this.globe.centerY, this.globe.radius, 0, TWO_PI);
+    context.fill();
+    context.restore();
+  }
+
+  private paintOverlay(context: CanvasRenderingContext2D): void {
+    this.reconstruction.setTime(this.model.timeMaProperty.value);
+    const snapshot = this.snapshot;
+    context.save();
+    this.clipToDisc(context);
+    if (this.model.showDeformingProperty.value) {
+      this.paintDeformingBelts(context, snapshot);
     }
-    return canvas.getContext("2d");
+    if (this.model.showCoastlinesProperty.value) {
+      this.paintCoastlines(context);
+    }
+    if (this.model.showPlatesProperty.value) {
+      this.paintPlateOutlines(context, snapshot);
+    }
+    if (this.model.showBoundariesProperty.value) {
+      this.paintBoundaries(context, snapshot);
+    }
+    context.restore();
   }
 
   /** The snapshot currently on screen — what the stepped layers are drawn from. */
   private get snapshot(): (typeof PLATE_SNAPSHOTS)[number] {
     this.reconstruction.setTime(this.model.timeMaProperty.value);
     return PLATE_SNAPSHOTS[this.reconstruction.nearestSnapshotIndex] as (typeof PLATE_SNAPSHOTS)[number];
-  }
-
-  public override paintCanvas(context: CanvasRenderingContext2D): void {
-    this.reconstruction.setTime(this.model.timeMaProperty.value);
-    const snapshot = this.snapshot;
-
-    context.save();
-    context.beginPath();
-    context.arc(this.globe.centerX, this.globe.centerY, this.globe.radius, 0, TWO_PI);
-    context.clip();
-
-    context.fillStyle = PlateTectonicsColors.oceanColorProperty.value.toCSS();
-    context.beginPath();
-    context.arc(this.globe.centerX, this.globe.centerY, this.globe.radius, 0, TWO_PI);
-    context.fill();
-
-    if (this.model.showPlatesProperty.value) {
-      this.paintPlates(context, snapshot);
-    }
-    if (this.model.showDeformingProperty.value) {
-      this.paintDeformingBelts(context, snapshot);
-    }
-    // Over the plate wash and under the boundaries: the continents are the thing being
-    // watched, and a ridge running through one should still be legible on top of it.
-    if (this.model.showCoastlinesProperty.value) {
-      this.paintCoastlines(context);
-    }
-    if (this.model.showBoundariesProperty.value) {
-      this.paintBoundaries(context, snapshot);
-    }
-
-    context.restore();
   }
 
   // ── Continents ──────────────────────────────────────────────────────────────
@@ -175,44 +192,35 @@ export class DeepTimeCanvasNode extends CanvasNode {
    * The ring is already the resolved topology at this instant, so it is drawn as it
    * stands — see {@link DeepTimeCanvasNode.appendResolved}.
    *
-   * ── Why the wash goes through an offscreen canvas ───────────────────────────
+   * ── Why the wash is its own CanvasNode ──────────────────────────────────────
    * The model's topologies are not a clean tiling: several plate IDs resolve to more
    * than one polygon at the same instant — flat slabs and sub-plates that overlap the
    * plate they belong to. Filling each one straight onto the globe at
    * {@link PLATE_FILL_OPACITY} stacks the alpha wherever two overlap, and the overlaps
    * are narrow slivers, so they came out as near-black streaks across the Pacific.
-   * Compositing the whole wash once at full opacity and then drawing *that* at
-   * `PLATE_FILL_OPACITY` makes an overlap look exactly like a single plate, which is
-   * what it should look like.
+   * The fills are painted opaquely on {@link plateLayer}, and that layer's opacity is
+   * {@link PLATE_FILL_OPACITY}, so an overlap looks exactly like a single plate.
    */
-  private paintPlates(context: CanvasRenderingContext2D, snapshot: (typeof PLATE_SNAPSHOTS)[number]): void {
+  private paintPlateFills(context: CanvasRenderingContext2D): void {
+    this.reconstruction.setTime(this.model.timeMaProperty.value);
+    const snapshot = this.snapshot;
     const palette = PlateTectonicsColors.platePaletteColorProperties;
-    const bounds = this.globe.viewBounds;
-    const layer = this.plateWashLayer(bounds.width, bounds.height);
-
-    if (layer) {
-      layer.clearRect(0, 0, bounds.width, bounds.height);
-      layer.save();
-      // The painter works in the projection's view coordinates, which need not start
-      // at the origin; the offscreen canvas does.
-      layer.translate(-bounds.minX, -bounds.minY);
-      for (const plate of snapshot.plates) {
-        if (plate.deforming) {
-          continue;
-        }
-        const paletteColor = palette[plate.plateId % palette.length] as (typeof palette)[number];
-        layer.fillStyle = paletteColor.value.toCSS();
-        layer.beginPath();
-        this.appendResolved(layer, plate.ring, "fill");
-        layer.fill();
+    context.save();
+    this.clipToDisc(context);
+    for (const plate of snapshot.plates) {
+      if (plate.deforming) {
+        continue;
       }
-      layer.restore();
-
-      context.globalAlpha = PLATE_FILL_OPACITY;
-      context.drawImage(layer.canvas, bounds.minX, bounds.minY);
-      context.globalAlpha = 1;
+      const paletteColor = palette[plate.plateId % palette.length] as (typeof palette)[number];
+      context.fillStyle = paletteColor.value.toCSS();
+      context.beginPath();
+      this.appendResolved(context, plate.ring, "fill");
+      context.fill();
     }
+    context.restore();
+  }
 
+  private paintPlateOutlines(context: CanvasRenderingContext2D, snapshot: (typeof PLATE_SNAPSHOTS)[number]): void {
     context.strokeStyle = PlateTectonicsColors.plateOutlineColorProperty.value.toCSS();
     context.lineWidth = 0.7;
     for (const plate of snapshot.plates) {

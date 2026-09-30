@@ -11,7 +11,7 @@
  */
 
 import { DerivedStringProperty, type TReadOnlyProperty } from "scenerystack/axon";
-import { Dimension2, Range } from "scenerystack/dot";
+import { Dimension2, Range, toFixed } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
@@ -120,15 +120,15 @@ export class MyCrustControlPanel extends PlateTectonicsPanel {
     // ── Live consequences of the three sliders ────────────────────────────────
     const thicknessReadout = new DerivedStringProperty(
       [model.crustThicknessProperty, crust.thicknessPatternStringProperty],
-      (thicknessM: number, pattern: string) => pattern.replace("{{value}}", (thicknessM / 1000).toFixed(0)),
+      (thicknessM: number, pattern: string) => pattern.replace("{{value}}", toFixed(thicknessM / 1000, 0)),
     );
     const elevationReadout = new DerivedStringProperty(
       [model.crustElevationProperty, crust.elevationPatternStringProperty],
-      (elevationM: number, pattern: string) => pattern.replace("{{value}}", (elevationM / 1000).toFixed(1)),
+      (elevationM: number, pattern: string) => pattern.replace("{{value}}", toFixed(elevationM / 1000, 1)),
     );
     const densityReadout = new DerivedStringProperty(
       [model.crustDensityProperty, crust.densityPatternStringProperty],
-      (density: number, pattern: string) => pattern.replace("{{value}}", density.toFixed(0)),
+      (density: number, pattern: string) => pattern.replace("{{value}}", toFixed(density, 0)),
     );
 
     const readout = (text: TReadOnlyProperty<string>): Text =>

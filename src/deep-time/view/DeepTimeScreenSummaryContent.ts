@@ -7,6 +7,7 @@
  */
 
 import { DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import { PRESENT_DAY_TOLERANCE_MYR } from "../../PlateTectonicsConstants.js";
@@ -19,7 +20,7 @@ export class DeepTimeScreenSummaryContent extends ScreenSummaryContent {
     const deepTime = strings.getDeepTimeStrings();
 
     const pastDetails = new PatternStringProperty(a11y.timeDetails.pastStringProperty, {
-      value: new DerivedStringProperty([model.timeMaProperty], (time: number) => time.toFixed(0)),
+      value: new DerivedStringProperty([model.timeMaProperty], (time: number) => toFixed(time, 0)),
     });
     const timeDetails = new DerivedStringProperty(
       [model.timeMaProperty, a11y.timeDetails.presentStringProperty, pastDetails],

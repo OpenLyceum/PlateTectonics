@@ -13,7 +13,7 @@
  */
 
 import { DerivedProperty, DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
-import { Dimension2 } from "scenerystack/dot";
+import { Dimension2, toFixed } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { type Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode, TimeSpeed } from "scenerystack/scenery-phet";
@@ -52,7 +52,7 @@ export class DeepTimeClockPanel extends PlateTectonicsPanel {
     const a11y = strings.getDeepTimeA11yStrings().controls;
 
     const ageReadout = new PatternStringProperty(deepTime.ageStringProperty, {
-      value: new DerivedProperty([model.timeMaProperty], (time: number) => time.toFixed(0)),
+      value: new DerivedProperty([model.timeMaProperty], (time: number) => toFixed(time, 0)),
     });
     const readoutProperty = new DerivedStringProperty(
       [model.timeMaProperty, deepTime.presentStringProperty, ageReadout],

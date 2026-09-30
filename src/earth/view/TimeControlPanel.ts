@@ -11,7 +11,7 @@
  */
 
 import { DerivedProperty, DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
-import { Dimension2 } from "scenerystack/dot";
+import { Dimension2, toFixed } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { type Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode, TimeSpeed } from "scenerystack/scenery-phet";
@@ -51,10 +51,10 @@ export class TimeControlPanel extends PlateTectonicsPanel {
 
     // "Present day" / "12 million years ago" / "12 million years from now".
     const pastReadout = new PatternStringProperty(timeStrings.pastStringProperty, {
-      value: new DerivedProperty([model.timeMillionsOfYearsProperty], (time: number) => Math.abs(time).toFixed(1)),
+      value: new DerivedProperty([model.timeMillionsOfYearsProperty], (time: number) => toFixed(Math.abs(time), 1)),
     });
     const futureReadout = new PatternStringProperty(timeStrings.futureStringProperty, {
-      value: new DerivedProperty([model.timeMillionsOfYearsProperty], (time: number) => time.toFixed(1)),
+      value: new DerivedProperty([model.timeMillionsOfYearsProperty], (time: number) => toFixed(time, 1)),
     });
     const readoutProperty = new DerivedStringProperty(
       [model.timeMillionsOfYearsProperty, timeStrings.presentStringProperty, pastReadout, futureReadout],

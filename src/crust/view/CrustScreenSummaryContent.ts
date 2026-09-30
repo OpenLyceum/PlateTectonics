@@ -12,6 +12,7 @@
  */
 
 import { DerivedStringProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import type { ColorMode } from "../../common/model/ColorMode.js";
 import { createSectionViewDescription } from "../../common/view/sectionViewDescription.js";
@@ -25,13 +26,13 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
     const crustDetails = new DerivedStringProperty(
       [model.crustThicknessProperty, model.crustDensityProperty, a11y.crustDetailsStringProperty],
       (thicknessM: number, density: number, pattern: string) =>
-        pattern.replace("{{thickness}}", (thicknessM / 1000).toFixed(0)).replace("{{density}}", density.toFixed(0)),
+        pattern.replace("{{thickness}}", toFixed(thicknessM / 1000, 0)).replace("{{density}}", toFixed(density, 0)),
     );
 
     const elevationDetails = new DerivedStringProperty(
       [model.crustElevationProperty, a11y.elevationAboveStringProperty, a11y.elevationBelowStringProperty],
       (elevationM: number, above: string, below: string) => {
-        const km = Math.abs(elevationM / 1000).toFixed(1);
+        const km = toFixed(Math.abs(elevationM / 1000), 1);
         return (elevationM >= 0 ? above : below).replace("{{value}}", km);
       },
     );

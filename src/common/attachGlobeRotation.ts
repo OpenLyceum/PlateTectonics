@@ -19,7 +19,7 @@
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import type { Vector2 } from "scenerystack/dot";
-import { DragListener, KeyboardListener, type Node } from "scenerystack/scenery";
+import { DragListener, KeyboardDragListener, type Node } from "scenerystack/scenery";
 import { GLOBE_KEYBOARD_STEP_DEGREES } from "../PlateTectonicsConstants.js";
 import type { GlobeProjection } from "./GlobeProjection.js";
 
@@ -68,21 +68,16 @@ export function attachGlobeRotation<T extends Node>(target: T, options: AttachGl
     }),
   );
 
+  // Arrow keys look around the globe (the opposite sense from pointer drag).
+  // Up is -y in view space, so latitude uses the negated vertical delta.
+  // The keyboard-help dialog already documents this with MoveDraggableItemsKeyboardHelpSection.
   target.addInputListener(
-    new KeyboardListener({
-      keys: ["arrowLeft", "arrowRight", "arrowUp", "arrowDown"],
-      fireOnHold: true,
-      fire: (_event, keysPressed) => {
+    new KeyboardDragListener({
+      dragDelta: 1,
+      shiftDragDelta: 0.25,
+      drag: (_event, listener) => {
         const step = GLOBE_KEYBOARD_STEP_DEGREES;
-        if (keysPressed === "arrowLeft") {
-          projection.rotateBy(-step, 0);
-        } else if (keysPressed === "arrowRight") {
-          projection.rotateBy(step, 0);
-        } else if (keysPressed === "arrowUp") {
-          projection.rotateBy(0, step);
-        } else if (keysPressed === "arrowDown") {
-          projection.rotateBy(0, -step);
-        }
+        projection.rotateBy(listener.modelDelta.x * step, -listener.modelDelta.y * step);
       },
     }),
   );

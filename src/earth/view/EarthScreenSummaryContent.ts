@@ -11,6 +11,7 @@
  */
 
 import { DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import { PRESENT_DAY_TOLERANCE_MYR } from "../../PlateTectonicsConstants.js";
@@ -106,7 +107,7 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
 
     // Where in geological time the plates are.
     const magnitudeOfTime = new DerivedStringProperty([model.timeMillionsOfYearsProperty], (time: number) =>
-      Math.abs(time).toFixed(0),
+      toFixed(Math.abs(time), 0),
     );
     const timeDescription = new DerivedStringProperty(
       [
