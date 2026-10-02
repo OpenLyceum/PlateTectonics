@@ -129,12 +129,13 @@ export class CrustModel implements TModel {
   /**
    * Where the probe's tip sits, in model metres (x across, elevation up).
    *
-   * Opens in the mantle below the fixed oceanic block rather than at the origin: the
-   * origin is the middle of the user's crust, where the probe's readout would sit on
-   * top of that block's own label, and where it would be in the way of the first thing
+   * Opens in the mantle under the seam between the fixed oceanic block and the user's
+   * crust, a little to the oceanic side. Not under the middle of either: the readout
+   * floats above the tip, and over a block's centre it covers that block's label — and
+   * in the middle of the user's crust it would also be in the way of the first thing
    * anyone does on this screen.
    */
-  public readonly probePositionProperty = new Property<Vector2>(new Vector2(-2 * CRUST_BLOCK_HALF_WIDTH_M, -30000), {
+  public readonly probePositionProperty = new Property<Vector2>(new Vector2(-85000, -30000), {
     valueComparisonStrategy: "equalsFunction",
   });
 

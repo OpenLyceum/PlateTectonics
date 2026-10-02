@@ -99,9 +99,11 @@ export class ColorModeControlPanel extends PlateTectonicsPanel {
       },
     );
 
+    // The box in the text colour, as on the Earth screen's layers: in the border colour
+    // an enabled checkbox looked like a disabled one.
     const checkboxOptions = {
       boxWidth: 15,
-      checkboxColor: PlateTectonicsColors.panelBorderColorProperty,
+      checkboxColor: PlateTectonicsColors.textColorProperty,
       checkboxColorBackground: PlateTectonicsColors.panelBackgroundColorProperty,
     };
 

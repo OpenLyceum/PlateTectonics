@@ -173,4 +173,14 @@ export class EarthModel implements TModel {
     this.timeSpeedProperty.reset();
     this.resetTime();
   }
+
+  /**
+   * Releases the derived properties and the clock, so a discarded screen can be
+   * collected. The view's own links are torn down with the view, not here.
+   */
+  public dispose(): void {
+    this.isPresentDayProperty.dispose();
+    this.isFlatMapProperty.dispose();
+    this.timer.dispose();
+  }
 }

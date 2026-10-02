@@ -17,13 +17,14 @@
  * viewer simply drops out until it comes back round.
  */
 
-import { Multilink } from "scenerystack/axon";
+import { Multilink, PatternStringProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node, type NodeOptions, Text } from "scenerystack/scenery";
 import { ArrowNode, PhetFont } from "scenerystack/scenery-phet";
 import { PLATES } from "../../common/data/generated/plateData.js";
 import type { EarthProjection } from "../../common/EarthProjection.js";
 import { PlateReconstruction } from "../../common/PlateReconstruction.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import { VELOCITY_VECTOR_SCALE } from "../../PlateTectonicsConstants.js";
 import type { EarthModel } from "../model/EarthModel.js";
@@ -59,6 +60,11 @@ export class PlateOverlayNode extends Node {
     this.addChild(arrowLayer);
     this.addChild(labelLayer);
 
+    const plateLabelStrings = StringManager.getInstance().getPlateLabelStrings();
+    // Keyed by plate code rather than by the dataset's English name, which stays the
+    // fallback for a plate the strings do not cover yet.
+    const plateNames: Partial<Record<string, TReadOnlyProperty<string>>> = plateLabelStrings.names;
+
     for (let index = 0; index < PLATES.length; index++) {
       const plate = PLATES[index] as (typeof PLATES)[number];
       if (!plate.major) {
@@ -66,8 +72,11 @@ export class PlateOverlayNode extends Node {
       }
 
       const velocity = PlateReconstruction.velocityAt(index, plate.labelLon, plate.labelLat);
-      const label = createHaloText(plate.name, 11, true);
-      const speedLabel = createHaloText(`${Math.round(velocity.speedMmPerYear)} mm/yr`, 9, false);
+      const label = createHaloText(plateNames[`${plate.code}StringProperty`] ?? plate.name, 11, true);
+      const speed = new PatternStringProperty(plateLabelStrings.speedStringProperty, {
+        value: Math.round(velocity.speedMmPerYear),
+      });
+      const speedLabel = createHaloText(speed, 9, false);
       const arrow = new ArrowNode(0, 0, 0, 0, {
         fill: PlateTectonicsColors.velocityVectorColorProperty,
         stroke: PlateTectonicsColors.labelHaloColorProperty,
@@ -144,7 +153,7 @@ export class PlateOverlayNode extends Node {
  * Text with a heavy stroke of the halo colour drawn behind it, so plate names stay
  * readable over both dark ocean and pale continents in the relief raster.
  */
-function createHaloText(text: string, size: number, bold: boolean): Node {
+function createHaloText(text: string | TReadOnlyProperty<string>, size: number, bold: boolean): Node {
   const font = new PhetFont({ size, weight: bold ? "bold" : "normal" });
   const halo = new Text(text, {
     font,

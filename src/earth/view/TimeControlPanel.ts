@@ -8,12 +8,16 @@
  * One second of wall-clock time is one million years at the normal speed, which is
  * the point of the whole panel: plate motion is imperceptible on a human timescale
  * and obvious on a geological one.
+ *
+ * Laid out as one wide row — readout, slider, buttons — because it sits under the
+ * map rather than in the control column: stacked under the layers it ran off the
+ * bottom of the screen.
  */
 
 import { DerivedProperty, DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
-import { Dimension2, toFixed } from "scenerystack/dot";
+import { Bounds2, Dimension2, toFixed } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
-import { type Node, Text, VBox } from "scenerystack/scenery";
+import { AlignBox, HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode, TimeSpeed } from "scenerystack/scenery-phet";
 import { HSlider } from "scenerystack/sun";
 import {
@@ -33,6 +37,12 @@ const NOTE_FONT = new PhetFont(10);
 /** Size of the time slider's track and thumb, in view pixels. */
 const SLIDER_TRACK_SIZE = new Dimension2(CONTROL_PANEL_WIDTH - 60, 4);
 const SLIDER_THUMB_SIZE = new Dimension2(13, 24);
+
+/**
+ * Width reserved for the title and readout, px. Fixed so that the slider does not
+ * shift sideways as the readout text changes length under the user's drag.
+ */
+const READOUT_COLUMN_WIDTH = 165;
 
 /** Major slider ticks every 25 Myr, minor ticks every 10 Myr. */
 const MAJOR_TICK_MYR = 25;
@@ -109,26 +119,40 @@ export class TimeControlPanel extends PlateTectonicsPanel {
       flowBoxSpacing: 12,
     });
 
-    const content = new VBox({
-      align: "center",
-      spacing: 7,
+    const maxWidth = READOUT_COLUMN_WIDTH;
+    const readoutColumn = new VBox({
+      align: "left",
+      spacing: 5,
       children: [
         new Text(timeStrings.titleStringProperty, {
           font: TITLE_FONT,
           fill: PlateTectonicsColors.textColorProperty,
+          maxWidth,
         }),
-        new Text(readoutProperty, { font: READOUT_FONT, fill: PlateTectonicsColors.accentColorProperty }),
-        slider,
-        timeControlNode,
+        new Text(readoutProperty, { font: READOUT_FONT, fill: PlateTectonicsColors.accentColorProperty, maxWidth }),
         new Text(timeStrings.rateStringProperty, {
           font: NOTE_FONT,
           fill: PlateTectonicsColors.secondaryTextColorProperty,
+          maxWidth,
         }),
       ],
     });
 
+    const content = new HBox({
+      align: "center",
+      spacing: 16,
+      children: [
+        new AlignBox(readoutColumn, {
+          alignBounds: new Bounds2(0, 0, READOUT_COLUMN_WIDTH, readoutColumn.height),
+          xAlign: "left",
+        }),
+        slider,
+        timeControlNode,
+      ],
+    });
+
     const options = optionize<TimeControlPanelOptions, EmptySelfOptions, PlateTectonicsPanelOptions>()(
-      { minWidth: CONTROL_PANEL_WIDTH },
+      { yMargin: 6 },
       providedOptions,
     );
     super(content, options);

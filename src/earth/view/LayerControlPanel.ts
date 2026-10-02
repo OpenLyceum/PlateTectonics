@@ -27,6 +27,19 @@ import { createLegendSwatch } from "./LegendSwatches.js";
 const LABEL_FONT = new PhetFont(13);
 const TITLE_FONT = new PhetFont({ size: 14, weight: "bold" });
 
+/** Panel margin on each side, px — what the content has to leave of the fixed width. */
+const X_MARGIN = 12;
+
+/** Widest a title may be: the panel's width less its margins. */
+const TITLE_MAX_WIDTH = CONTROL_PANEL_WIDTH - 2 * X_MARGIN;
+
+/**
+ * Widest a swatch-and-label row may be: the title width less the checkbox (or radio
+ * button) and its gap. Without it a longer translation widens the panel, and since the
+ * panel is right-aligned, it grows leftward over the map.
+ */
+const ROW_MAX_WIDTH = TITLE_MAX_WIDTH - 24;
+
 export type LayerControlPanelOptions = PlateTectonicsPanelOptions;
 
 export class LayerControlPanel extends PlateTectonicsPanel {
@@ -88,6 +101,7 @@ export class LayerControlPanel extends PlateTectonicsPanel {
           entry.property,
           new HBox({
             spacing: 6,
+            maxWidth: ROW_MAX_WIDTH,
             children: [
               entry.swatch,
               new Text(entry.label, { font: LABEL_FONT, fill: PlateTectonicsColors.textColorProperty }),
@@ -133,9 +147,8 @@ export class LayerControlPanel extends PlateTectonicsPanel {
       depthRadioButtons.enabled = showEarthquakes;
     });
 
-    // Spacings are tight because the control column has to hold this panel, the view
-    // selector and the whole geological-time panel inside the ScreenView's height —
-    // every row of layers here comes out of the time controls below.
+    // Spacings are tight because the control column has to hold this panel and the view
+    // selector inside the ScreenView's height.
     const content = new VBox({
       align: "left",
       spacing: 7,
@@ -143,18 +156,20 @@ export class LayerControlPanel extends PlateTectonicsPanel {
         new Text(layerStrings.titleStringProperty, {
           font: TITLE_FONT,
           fill: PlateTectonicsColors.textColorProperty,
+          maxWidth: TITLE_MAX_WIDTH,
         }),
         new VBox({ align: "left", spacing: 5, children: checkboxes }),
         new Text(depthStrings.titleStringProperty, {
           font: TITLE_FONT,
           fill: PlateTectonicsColors.textColorProperty,
+          maxWidth: TITLE_MAX_WIDTH,
         }),
         depthRadioButtons,
       ],
     });
 
     const options = optionize<LayerControlPanelOptions, EmptySelfOptions, PlateTectonicsPanelOptions>()(
-      { minWidth: CONTROL_PANEL_WIDTH, align: "left", yMargin: 8 },
+      { minWidth: CONTROL_PANEL_WIDTH, align: "left", xMargin: X_MARGIN, yMargin: 8 },
       providedOptions,
     );
     super(content, options);
@@ -166,7 +181,6 @@ export class LayerControlPanel extends PlateTectonicsPanel {
 /** A depth-filter label with the matching earthquake colour beside it. */
 function depthLabel(labelProperty: TReadOnlyProperty<string>, band: "all" | "shallow" | "intermediate" | "deep"): Node {
   const text = new Text(labelProperty, { font: LABEL_FONT, fill: PlateTectonicsColors.textColorProperty });
-  return band === "all"
-    ? new HBox({ spacing: 6, children: [createLegendSwatch("allDepths"), text] })
-    : new HBox({ spacing: 6, children: [createLegendSwatch(band), text] });
+  const swatch = createLegendSwatch(band === "all" ? "allDepths" : band);
+  return new HBox({ spacing: 6, maxWidth: ROW_MAX_WIDTH, children: [swatch, text] });
 }

@@ -49,6 +49,10 @@ const FEATURE_FONT = new PhetFont(11);
 const EXTENT_FONT = new PhetFont(11);
 const DROP_FONT = new PhetFont(12);
 
+/** Space between the drop-zone prompt and the edge of its backing, px. */
+const DROP_LABEL_X_PADDING = 6;
+const DROP_LABEL_Y_PADDING = 3;
+
 /**
  * The extent of a drop zone, in model coordinates.
  *
@@ -515,15 +519,23 @@ export class PlateMotionLabelsNode extends Node {
     }
 
     if (empty) {
+      // On a backing of the panel colour, because the zone straddles the sky and the
+      // mantle and the dashed-edge grey is close to the mantle's own. The text takes the
+      // highlight colour only while it is a live target.
+      const text = new Text(label, {
+        font: DROP_FONT,
+        fill: armed ? color : PlateTectonicsColors.textColorProperty,
+        maxWidth: zoneBounds.width - 24,
+        center: zoneBounds.center,
+      });
       visuals.addChild(
-        new Text(label, {
-          font: DROP_FONT,
-          fill: color,
-          maxWidth: zoneBounds.width - 24,
-          centerX: zoneBounds.centerX,
-          centerY: zoneBounds.centerY,
+        new Rectangle(text.bounds.dilatedXY(DROP_LABEL_X_PADDING, DROP_LABEL_Y_PADDING), {
+          fill: PlateTectonicsColors.panelBackgroundColorProperty,
+          opacity: 0.85,
+          cornerRadius: 4,
         }),
       );
+      visuals.addChild(text);
     }
   }
 

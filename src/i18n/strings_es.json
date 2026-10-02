@@ -125,6 +125,27 @@
     "reconstruction": "Posiciones de las placas extrapoladas del movimiento actual",
     "topographyAtPresent": "El relieve se muestra solo en la actualidad"
   },
+  "plateLabels": {
+    "speed": "{{value}} mm/año",
+    "names": {
+      "AF": "África",
+      "AM": "Amur",
+      "AN": "Antártida",
+      "AR": "Arabia",
+      "AU": "Australia",
+      "EU": "Eurasia",
+      "IN": "India",
+      "NA": "Norteamérica",
+      "NZ": "Nazca",
+      "OK": "Ojotsk",
+      "PA": "Pacífico",
+      "PS": "Mar de Filipinas",
+      "SA": "Sudamérica",
+      "SC": "Scotia",
+      "SO": "Somalia",
+      "SU": "Sonda"
+    }
+  },
   "legend": {
     "divergent": "Divergente",
     "convergent": "Convergente",

@@ -8,11 +8,10 @@
  *   │ ┌──────────────────────────────────────┐ ├───────────────┤
  *   │ │ globe  ·or·  flat map                │ │ layers        │
  *   │ └──────────────────────────────────────┘ │ depth filter  │
- *   │ legend                                   ├───────────────┤
- *   │                                          │ geological    │
- *   │                                          │ time          │
- *   │                                    reset │               │
- *   └──────────────────────────────────────────┴───────────────┘
+ *   │ legend                                   │               │
+ *   │ ┌──────────────────────────────────┐     └───────────────┘
+ *   │ │ geological time                  │ reset               │
+ *   └──────────────────────────────────────────────────────────┘
  *
  * The flat map and the globe share one viewport, and the view switch decides which of
  * the two is visible. The relief raster is fetched here, once, and handed to both map
@@ -208,17 +207,19 @@ export class EarthScreenView extends ScreenView {
       right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
       top: viewPanel.bottom + PANEL_SPACING,
     });
+    // Geological time goes under the map, as one row: stacked under the layers, the
+    // column is taller than the screen.
     const timePanel = new TimeControlPanel(model, {
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      top: layerPanel.bottom + PANEL_SPACING,
+      left: MAP_VIEW_BOUNDS.minX,
+      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(viewPanel);
     this.addChild(layerPanel);
     this.addChild(timePanel);
 
     // ── Reset All ─────────────────────────────────────────────────────────────
-    // Bottom-right of the play area rather than of the whole screen: the control
-    // column runs the full height, and the space under the legend is free.
+    // Bottom-right of the play area rather than of the whole screen, beside the time
+    // panel and clear of the control column.
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {

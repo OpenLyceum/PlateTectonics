@@ -125,6 +125,27 @@
     "reconstruction": "Plate positions extrapolated from today's motion",
     "topographyAtPresent": "Relief shown at the present day only"
   },
+  "plateLabels": {
+    "speed": "{{value}} mm/yr",
+    "names": {
+      "AF": "Africa",
+      "AM": "Amur",
+      "AN": "Antarctica",
+      "AR": "Arabia",
+      "AU": "Australia",
+      "EU": "Eurasia",
+      "IN": "India",
+      "NA": "North America",
+      "NZ": "Nazca",
+      "OK": "Okhotsk",
+      "PA": "Pacific",
+      "PS": "Philippine Sea",
+      "SA": "South America",
+      "SC": "Scotia",
+      "SO": "Somalia",
+      "SU": "Sunda"
+    }
+  },
   "legend": {
     "divergent": "Divergent",
     "convergent": "Convergent",

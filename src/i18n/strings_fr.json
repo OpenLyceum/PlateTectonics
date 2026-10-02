@@ -125,6 +125,27 @@
     "reconstruction": "Positions des plaques extrapolées du mouvement actuel",
     "topographyAtPresent": "Relief affiché uniquement à l'époque actuelle"
   },
+  "plateLabels": {
+    "speed": "{{value}} mm/an",
+    "names": {
+      "AF": "Afrique",
+      "AM": "Amour",
+      "AN": "Antarctique",
+      "AR": "Arabie",
+      "AU": "Australie",
+      "EU": "Eurasie",
+      "IN": "Inde",
+      "NA": "Amérique du Nord",
+      "NZ": "Nazca",
+      "OK": "Okhotsk",
+      "PA": "Pacifique",
+      "PS": "Mer des Philippines",
+      "SA": "Amérique du Sud",
+      "SC": "Scotia",
+      "SO": "Somalie",
+      "SU": "Sonde"
+    }
+  },
   "legend": {
     "divergent": "Divergente",
     "convergent": "Convergente",

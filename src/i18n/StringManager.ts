@@ -152,6 +152,14 @@ export class StringManager {
     return stringProperties.layers;
   }
 
+  /**
+   * Names for the plates labelled on the Earth screen, keyed by PB2002 plate code, and
+   * the pattern for the speed readout under each one.
+   */
+  public getPlateLabelStrings() {
+    return stringProperties.plateLabels;
+  }
+
   /** Labels for the earthquake depth-filter radio buttons. */
   public getDepthFilterStrings() {
     return stringProperties.depthFilter;

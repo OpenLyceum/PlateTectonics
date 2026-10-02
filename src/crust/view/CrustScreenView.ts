@@ -2,7 +2,8 @@
  * CrustScreenView.ts
  *
  * Layout for the Crust screen: the painted cross-section and its labels in the play
- * area, the three sliders and the view options down the right, the probe on top.
+ * area, the legend and the zoom under it, the three sliders and the view options down
+ * the right, the probe on top.
  *
  * The vertical scale is rebuilt whenever the zoom changes, and handed to the canvas,
  * the labels and the probe — they all read the same mapping, so nothing can drift out
@@ -199,9 +200,11 @@ export class CrustScreenView extends ScreenView {
       right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
       top: crustPanel.bottom + PANEL_SPACING,
     });
+    // The zoom sits under the section rather than at the foot of the column: the three
+    // panels stacked are taller than the screen, and it acts on the picture anyway.
     const zoomPanel = new CrustZoomControl(model.zoomProperty, {
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      top: viewPanel.bottom + PANEL_SPACING,
+      left: bounds.minX,
+      top: legend.bottom + PANEL_SPACING,
     });
     // "My Crust" goes away at the whole-Earth zoom, as PhET's did. Its three sliders act
     // on a block that at that scale is thinner than the line drawn around it, so leaving
@@ -211,11 +214,10 @@ export class CrustScreenView extends ScreenView {
     const crustPanelVisible = new DerivedProperty([model.zoomProperty], (zoom: CrustZoom) => zoom !== "earth");
     crustPanel.visibleProperty = crustPanelVisible;
 
-    // The two panels below it move up to fill the space rather than leaving a hole where
-    // it was. Positions are set once at construction, so they have to be re-set here.
+    // The panel below it moves up to fill the space rather than leaving a hole where it
+    // was. Positions are set once at construction, so it has to be re-set here.
     crustPanelVisible.link((visible) => {
       viewPanel.top = visible ? crustPanel.bottom + PANEL_SPACING : bounds.minY;
-      zoomPanel.top = viewPanel.bottom + PANEL_SPACING;
     });
     this.disposeEmitter.addListener(() => crustPanelVisible.dispose());
 

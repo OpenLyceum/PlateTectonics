@@ -60,8 +60,11 @@ import {
 } from "./BoundaryRules.js";
 import type { PlateType } from "./PlateType.js";
 
-/** Where the probe starts: in the mantle, well clear of both drop zones. */
-const PROBE_START = new Vector2(-260000, -120000);
+/**
+ * Where the probe starts: in the mantle, deep enough that the readout floating above
+ * the tip clears the left drop zone and its prompt, not just the tip itself.
+ */
+const PROBE_START = new Vector2(-260000, -205000);
 
 /**
  * How fast the boundary runs while a handle is deflected by `fraction` of its travel,

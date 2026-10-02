@@ -9,21 +9,27 @@
  * is legible — the crust is a hairline for the top three quarters of the slider. The
  * three stops are the three scales worth looking at, and each one is a scale a
  * textbook figure would actually be drawn at.
+ *
+ * One row rather than a stacked panel, because it sits under the section it acts on
+ * rather than in the control column: a column of "My Crust", "View" and a stacked zoom
+ * panel is taller than the screen.
  */
 
 import type { Property, TReadOnlyProperty } from "scenerystack/axon";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
-import { type Node, Text, VBox } from "scenerystack/scenery";
+import { HBox, type Node, Text } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
-import { VerticalAquaRadioButtonGroup } from "scenerystack/sun";
+import { HorizontalAquaRadioButtonGroup } from "scenerystack/sun";
 import { PlateTectonicsPanel, type PlateTectonicsPanelOptions } from "../../common/PlateTectonicsPanel.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
-import { CONTROL_PANEL_WIDTH } from "../../PlateTectonicsConstants.js";
 import type { CrustZoom } from "../model/CrustModel.js";
 
 const TITLE_FONT = new PhetFont({ size: 14, weight: "bold" });
 const LABEL_FONT = new PhetFont(13);
+
+/** Widest any one label may grow before it is scaled down, px. */
+const LABEL_MAX_WIDTH = 140;
 
 export type CrustZoomControlOptions = PlateTectonicsPanelOptions;
 
@@ -40,10 +46,10 @@ export class CrustZoomControl extends PlateTectonicsPanel {
       new Text(text, {
         font: LABEL_FONT,
         fill: PlateTectonicsColors.textColorProperty,
-        maxWidth: CONTROL_PANEL_WIDTH - 60,
+        maxWidth: LABEL_MAX_WIDTH,
       });
 
-    const radioButtons = new VerticalAquaRadioButtonGroup<CrustZoom>(
+    const radioButtons = new HorizontalAquaRadioButtonGroup<CrustZoom>(
       zoomProperty,
       [
         { value: "crust", createNode: () => label(crust.zoomCrustStringProperty) },
@@ -51,7 +57,7 @@ export class CrustZoomControl extends PlateTectonicsPanel {
         { value: "earth", createNode: () => label(crust.zoomEarthStringProperty) },
       ],
       {
-        spacing: 4,
+        spacing: 14,
         radioButtonOptions: {
           radius: 7,
           selectedColor: PlateTectonicsColors.accentColorProperty,
@@ -63,21 +69,21 @@ export class CrustZoomControl extends PlateTectonicsPanel {
       },
     );
 
-    const content = new VBox({
-      spacing: 8,
-      align: "left",
+    const content = new HBox({
+      spacing: 14,
+      align: "center",
       children: [
         new Text(crust.zoomStringProperty, {
           font: TITLE_FONT,
           fill: PlateTectonicsColors.textColorProperty,
-          maxWidth: CONTROL_PANEL_WIDTH - 30,
+          maxWidth: LABEL_MAX_WIDTH,
         }),
         radioButtons,
       ],
     });
 
     const options = optionize<CrustZoomControlOptions, EmptySelfOptions, PlateTectonicsPanelOptions>()(
-      { minWidth: CONTROL_PANEL_WIDTH },
+      { yMargin: 7 },
       providedOptions,
     );
     super(content, options);
