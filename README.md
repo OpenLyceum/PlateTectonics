@@ -2,8 +2,9 @@
 
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
-An interactive map of the Earth's tectonic plates, built with
-[SceneryStack](https://scenerystack.org/) — and drawn from real data throughout.
+Explore plate tectonics across three screens: a present-day map of the Earth,
+crustal isostasy, and schematic plate motion. Built with
+[SceneryStack](https://scenerystack.org/).
 
 Toggle layers over a shaded relief map of the world — on a globe you can turn, or on a
 flat map you can pan and zoom — to see why earthquakes, volcanoes, mountains and
@@ -12,7 +13,7 @@ trenches are all in the same places.
 ## Features
 
 **Earth** — a 3-D globe you can turn, or a flat map you can pan
-and zoom, with the same layers drawn on either.
+and zoom, with the same present-day layers drawn on either.
 
 - **Plate boundaries** from the PB2002 plate model, colour-coded divergent /
   convergent / transform.
@@ -27,10 +28,6 @@ and zoom, with the same layers drawn on either.
   contoured from the EarthByte age grid. The youngest crust hugs every spreading
   ridge and the same ages appear at the same distance on both flanks, getting older
   out to the continental margins — seafloor spreading, drawn from the measurements.
-
-**Geological time** — run plate motion from 50 million years in the past to 50 million
-years into the future at one million years per second. Continents drift, coastlines
-tear along plate boundaries, and hotspots stay put while plates slide over them.
 
 **Crust** — three blocks of crust floating in the mantle: fixed oceanic on the left,
 fixed continental on the right, and in the middle one whose temperature, composition
@@ -50,11 +47,6 @@ the crust's cross-sectional area. Two ocean plates rift apart and make new sea f
 that deepens as it cools. Combinations that have no physical answer, such as two
 identical ocean plates converging, are refused rather than guessed at. Ported from the
 "Plate Motion" tab; transform boundaries are out of scope, being motion into the page.
-
-**Deep Time** — replay a published plate reconstruction from the present back to
-250 Ma (Pangaea), one frame every 5 million years, from Müller et al. (2019).
-This is a playback of a model fitted to the geological record. It is separate
-from the Earth screen's ±50 Myr run, which only extrapolates today's velocities.
 
 The science, the sources and the model's limits are documented in
 [`doc/model.md`](doc/model.md); the code is documented in

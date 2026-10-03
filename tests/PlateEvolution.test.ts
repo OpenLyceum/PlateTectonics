@@ -1,10 +1,11 @@
 /**
  * PlateEvolution.test.ts
  *
- * What the reconstruction does to the *picture* when the clock runs, as opposed to
- * the point-by-point rotation arithmetic that `PlateReconstruction.test.ts` covers.
+ * Numerical geometry checks for the retained Euler-pole rotation utility.
+ * Earth itself uses zero time; these checks exercise nonzero rotations independently
+ * of the screen model and its present-day rendering.
  *
- * Two things have to hold for the evolution to be worth showing a student:
+ * Two things have to hold for the extrapolation to stay geometrically consistent:
  *
  *  1. The plates stay a mosaic. Carry each plate outline rigidly about its own Euler
  *     pole and the two sides of every boundary drift apart — a gap where a naive model
@@ -23,7 +24,6 @@ import type { BoundaryType } from "../src/common/data/dataTypes.js";
 import { BOUNDARY_SEGMENTS } from "../src/common/data/generated/boundaryData.js";
 import { PLATES } from "../src/common/data/generated/plateData.js";
 import { MOTION_FRAMES, PlateReconstruction } from "../src/common/PlateReconstruction.js";
-import { TIME_RANGE } from "../src/earth/model/EarthModel.js";
 import { EARTH_RADIUS_KM } from "../src/PlateTectonicsConstants.js";
 
 const DEG_TO_RAD = Math.PI / 180;
@@ -51,8 +51,8 @@ function movedTo(reconstruction: PlateReconstruction, lon: number, lat: number, 
   return [reconstruction.lon, reconstruction.lat];
 }
 
-/** The ends of the reconstruction slider, which is as far as the sim ever runs. */
-const EXTREMES = [TIME_RANGE.min, TIME_RANGE.max];
+/** Numerical stress range for Euler-pole extrapolation, in Myr. */
+const EXTREMES = [-50, 50];
 
 describe("the plate mosaic stays closed", () => {
   /**
@@ -97,7 +97,7 @@ describe("the plate mosaic stays closed", () => {
       const median = (values: number[]): number => [...values].sort((a, b) => a - b)[values.length >> 1] as number;
 
       // A rigid reconstruction puts the two sides of a typical boundary several
-      // hundred kilometres apart at the ends of the slider.
+      // hundred kilometres apart at the stress-range extremes.
       expect(median(rigidGaps)).toBeGreaterThan(500);
 
       // A ridge or a transform sits equidistant from the two plates. It is not exact
@@ -154,7 +154,7 @@ describe("the plate mosaic stays closed", () => {
 
     const today = spread(0);
     for (const timeMyr of EXTREMES) {
-      // Running the clock must not scatter the outlines noticeably further apart than
+      // Applying nonzero rotations must not scatter the outlines further apart than
       // simplifying them already did.
       expect(spread(timeMyr)).toBeLessThan(Math.max(150, today * 1.5));
     }
@@ -195,7 +195,7 @@ describe("plates keep their shape", () => {
     return total;
   }
 
-  it("holds every major plate's area within a factor of a few over the slider's range", () => {
+  it("holds every major plate's area within a factor of a few over the numerical rotation range", () => {
     const reconstruction = new PlateReconstruction();
     const majors = PLATES.filter((plate) => plate.major);
     expect(majors.length).toBeGreaterThan(10);
@@ -213,7 +213,7 @@ describe("plates keep their shape", () => {
         // made at its ridges and consumed at its trenches, and it is the point. What
         // this rules out is an outline flying apart. The loosest are the Philippine
         // Sea and Scotia plates, hemmed in by microplates whose motion is nonsense
-        // this far out; see doc/model.md.
+        // this far out; Earth does not expose this extrapolation.
         expect(ratio, `${plate.code} (${plate.name}) area × ${ratio.toFixed(1)} at ${timeMyr} Myr`).toBeLessThan(5);
       }
     }

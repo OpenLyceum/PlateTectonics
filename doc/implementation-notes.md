@@ -8,7 +8,7 @@ science.
 ```
 src/
   PlateTectonicsColors.ts        every ProfileColorProperty (default + projector)
-  PlateTectonicsConstants.ts     layout px, Earth-science quantities, time range
+  PlateTectonicsConstants.ts     layout px, Earth-science quantities, schematic timing
   common/
     EarthProjection.ts           the interface both projections implement
     MapProjection.ts             equirectangular lon/lat ↔ view, with a camera
@@ -32,7 +32,6 @@ src/
       PlateOverlayNode.ts          plate labels and motion arrows (Scenery nodes)
       LayerControlPanel.ts         layer checkboxes + depth filter
       ViewControlPanel.ts          the globe / flat-map switch
-      TimeControlPanel.ts          time slider, play/pause, speed
       MapLegendNode.ts             legend strip + data credit
       LegendSwatches.ts            the symbols, shared by legend and checkboxes
 scripts/
@@ -44,12 +43,11 @@ scripts/
 ## Why the map is a canvas
 
 The map draws roughly 8 800 earthquakes, 1 600 volcanoes, 1 580 boundary segments and
-several thousand outline vertices — and *every one of them moves* when the
-reconstruction clock runs, because each vertex is rotated about its plate's Euler
-pole. Rebuilding that many Kite `Shape`s per frame does not keep up, so `MapCanvasNode`
-is a `CanvasNode` that paints them directly. It repaints only when something it
-depends on changes: a layer toggle, the depth filter, the reconstruction time, or a
-colour-profile switch.
+several thousand outline vertices. Turning the globe or panning and zooming the flat
+map changes every projected position. Rebuilding that many Kite `Shape`s per frame
+does not keep up, so both views use `CanvasNode`s that paint the datasets directly.
+They repaint on a layer toggle, depth-filter change, camera change or colour-profile
+switch. All geographic coordinates remain at their present-day positions.
 
 Things that are few and need crisp text stay ordinary Scenery nodes: the sixteen plate
 labels and motion arrows (`PlateOverlayNode`) — which also keeps them localized and
@@ -58,7 +56,8 @@ reachable.
 `PlateReconstruction.transform` writes its result into public scratch fields rather
 than returning an object, because it is called tens of thousands of times per frame
 and allocating there would dominate the frame budget. At the present day it is the
-identity and returns immediately, which is the common case.
+identity and returns immediately. Earth keeps this transform at zero time; its model
+has no reconstruction clock or playback controls.
 
 ## Drawing a sphere on a rectangle
 
@@ -80,10 +79,8 @@ Three problems come out of the projection, all handled in `MapCanvasNode.appendP
    are already closed and `closePath` is only used for fills — which is just as well,
    because on an unwrapped ring `closePath` would draw a chord straight across the map.
 
-Coastline vertices carry a *per-vertex* plate index, so a coastline that straddles a
-boundary tears apart correctly under reconstruction — Baja California rides the Pacific
-plate away from North America. The outline is broken at those tears (the fill still
-spans them) so the torn edge does not leave a stray line across the ocean.
+Coastline vertices retain their per-vertex plate indices in the generated dataset,
+but Earth draws their original coordinates with the identity transform.
 
 ## Panning and zooming the flat map
 
@@ -121,10 +118,10 @@ model. `showGlobeProperty` does, because it is a choice about what is shown.
 
 ## Drawing a sphere as a sphere
 
-The **3-D globe** (`GlobeCanvasNode`, off by default) is the same layers in the same
+The **3-D globe** (`GlobeCanvasNode`, on by default) is the same layers in the same
 order and the same colours; only the projection differs. Both views are written against
 `EarthProjection`, whose `project` returns *whether* a point can be seen as well as
-where it goes — always true on the flat map, and false for the far hemisphere on the
+where it goes — false outside the flat viewport, or on the far hemisphere of the
 globe. Everything that draws geography goes through it, including `PlateOverlayNode`,
 which is instantiated once per projection.
 
@@ -135,7 +132,7 @@ disc: each pixel is un-projected and sampled, into a texture rebuilt only when t
 camera moves.
 
 The rectangle's problems (the antimeridian, circumpolar rings) vanish; three of its own
-take their place, all in `GlobeCanvasNode`:
+take their place, handled by `GlobeFeaturePainter` for `GlobeCanvasNode`:
 
 1. **The limb.** Polylines are cut where they cross it — the crossing is found by
    interpolating on `GlobeProjection.depth`, which changes sign exactly there. Filled
@@ -189,66 +186,33 @@ Notable pieces:
   colour ramp plus a north-west illumination, and a light ice mask over high polar
   ground so Greenland and Antarctica read as ice rather than as mountains.
 
-- `scripts/data/gplates.ts` + `scripts/data/gplates/resolve.py` resolve the deep-time
-  plate model. This is the one step that shells out to Python, and it earns the
-  exception: a GPlates rotation file is a *hierarchy* of relative rotations whose shape
-  changes with time, and a plate polygon at 100 Ma is rebuilt from whichever moving
-  boundary features bounded it then. pyGPlates is the reference implementation of both,
-  and reimplementing it in TypeScript to save a build-time dependency would be trading
-  a correct answer for a fashionable one. The step creates its own virtualenv under
-  `.cache/gplates/`, caches the resolved JSON keyed by span and step, and is not needed
-  by `npm run build`, `npm test`, or the shipped sim.
-
 Generated files are excluded from Biome (see `biome.json`) and formatted by
 `scripts/data/emit.ts` instead, which keeps the numeric arrays compact.
 
-## Two reconstructions, one painter
+## Geographic transforms and the globe painter
 
-The sim reconstructs plate positions in two quite different ways, and the rendering
-path is shared rather than duplicated between them.
+`GlobeFeaturePainter` owns the sphere-on-a-disc path work described above. It takes a
+`GlobeProjection` and a `SurfaceTransform`, whose `transform(lon, lat, frame)` writes
+to scratch `lon` and `lat` fields. Earth's `PlateReconstruction` stays at zero time,
+so this transform leaves every source coordinate unchanged.
 
-`PlateReconstruction` (Earth screen) spins each plate about a fixed Euler pole at a
-constant rate. `DeepTimeReconstruction` (Deep Time screen) interpolates a published
-model's *sampled* finite rotations with a quaternion slerp. What they have in common is
-the shape of the answer: `transform(lon, lat, frame)` writing to scratch `lon`/`lat`
-fields, which is the `SurfaceTransform` interface in `GlobeFeaturePainter.ts`.
-
-That is what lets both screens share `GlobeFeaturePainter` — the sphere-on-a-disc work
-described above, which is by some distance the trickiest code in the sim and the last
-thing that should exist in two copies. The painter takes a `GlobeProjection` and a
-`SurfaceTransform` and knows nothing else about either screen.
-
-Two consequences worth knowing:
-
-- The Deep Time screen's *resolved* geometry — plate polygons, boundary lines — is
-  already at the instant being drawn and must not be rotated again. It still goes
-  through the painter, because subdividing long segments and cutting at the limb apply
-  to it just as much, so it is handed `IDENTITY_ROTATION_SLOT`: row 0 of the rotation
-  table, reserved at build time and guaranteed to be the identity at every sample.
-  There is a test on that, because if it ever stopped being the identity the plates
-  would slide off the continents they belong to.
-- The Deep Time plate wash is composited on an offscreen canvas and drawn once at
-  `PLATE_FILL_OPACITY`, rather than filled plate by plate. The model's topologies are
-  not a clean tiling — several plate IDs resolve to more than one polygon at the same
-  instant, flat slabs and sub-plates overlapping the plate they belong to — and filling
-  each straight onto the globe stacks the alpha in the overlaps, which came out as
-  near-black slivers.
+The Euler-pole rotation utility and generated motion-frame metadata remain available
+for velocity calculations and their existing numerical tests. They do not expose an
+Earth playback feature. `PlateEvolution.test.ts` exercises those retained mathematical
+utilities independently of the screen model.
 
 ## Accessibility
 
 - `EarthScreenSummaryContent` derives its *current details* paragraph from the
   model, so a screen-reader user hears whether the globe or the flat map is showing,
-  which layers are drawn, which depths pass the filter, and where in geological time
-  the plates are.
+  which layers are drawn, and which depths pass the filter.
 - Every control carries an `accessibleName` (and a help text where it earns one) from
   the `a11y` string group.
 - `EarthScreenView` sets an explicit `pdomOrder`: the global view and its zoom
-  buttons → view switch → layer checkboxes → depth filter → time slider → time
-  controls → Reset All. The map and the globe are both in it; whichever is hidden drops
-  out on its own.
-- The keyboard-help dialog has a section per interaction kind: slider, moving a
-  draggable item (which is how both the map and the globe are moved), and basic
-  actions.
+  buttons → view switch → layer checkboxes → depth filter → Reset All. The map and
+  the globe are both in it; whichever is hidden drops out on its own.
+- The Earth keyboard-help dialog documents moving a draggable item (the map or
+  globe) and basic actions. It has no slider section.
 
 ## Testing
 
@@ -257,7 +221,7 @@ Two consequences worth knowing:
 | File | Covers |
 |---|---|
 | `PlateReconstruction.test.ts` | Euler-pole rotation, round trips, and plate speeds against published values |
-| `EarthModel.test.ts` | layer state, depth bands, the time clock and reset |
+| `EarthModel.test.ts` | layer state, depth bands, view selection and reset |
 | `MapProjection.test.ts` | projection round trips, the 2:1 viewport, motion-arrow bearings, the camera |
 | `GlobeProjection.test.ts` | orthographic projection and its inverse, visibility, bearings, the camera |
 | `geophysicalData.test.ts` | integrity of every generated dataset, plus a few facts about the Earth |

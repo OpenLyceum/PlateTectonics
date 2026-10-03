@@ -6,15 +6,13 @@
  *
  * ── Why a canvas instead of a Scenery Path per feature ────────────────────────
  * The datasets are large — roughly 9 000 earthquakes, 1 600 volcanoes, 1 580
- * boundary segments and a few thousand outline vertices — and every one of them
- * moves when the reconstruction clock runs, because each vertex is rotated about
- * its plate's Euler pole. Rebuilding thousands of `Shape`s per frame would not keep
- * up; painting them straight onto a canvas does, and it is the same "custom Node"
+ * boundary segments and a few thousand outline vertices. The camera moves all of
+ * them together, so rebuilding thousands of `Shape`s per frame would not keep up;
+ * painting them straight onto a canvas does, and it is the same "custom Node"
  * escape hatch Scenery provides for exactly this case.
  *
  * The node repaints only when something it depends on changes: any layer toggle, the
- * depth filter, the reconstruction time, a colour-profile switch, or — on the globe —
- * the camera.
+ * depth filter, a colour-profile switch, or the camera.
  *
  * ── What a subclass supplies ──────────────────────────────────────────────────
  * Everything that depends on the *shape of the world*: how the drawing area is
@@ -55,8 +53,7 @@ const MIN_CATALOGUE_MAGNITUDE = Math.min(...EARTHQUAKES.magnitude);
 
 /**
  * Re-exported so the two canvas subclasses can keep importing them from here. Both
- * really belong to feature *tracing*, which this screen's globe and the Deep Time
- * screen share — see `GlobeFeaturePainter`.
+ * really belong to feature tracing — see `GlobeFeaturePainter`.
  */
 export { isSeamSegment, type RingMode } from "../../common/view/GlobeFeaturePainter.js";
 
@@ -68,6 +65,7 @@ export type EarthCanvasNodeOptions = CanvasNodeOptions;
 export abstract class EarthCanvasNode extends CanvasNode {
   protected readonly model: EarthModel;
   protected readonly projection: EarthProjection;
+  /** Identity transform: geography remains at its present-day coordinates. */
   protected readonly reconstruction = new PlateReconstruction();
 
   /** The shaded relief raster, once it has finished decoding. */
@@ -90,7 +88,6 @@ export abstract class EarthCanvasNode extends CanvasNode {
         model.showTopographyProperty,
         model.showSeafloorAgeProperty,
         model.earthquakeDepthFilterProperty,
-        model.timeMillionsOfYearsProperty,
         ...projection.cameraProperties,
         PlateTectonicsColors.oceanColorProperty,
         PlateTectonicsColors.landColorProperty,
@@ -116,20 +113,13 @@ export abstract class EarthCanvasNode extends CanvasNode {
   }
 
   /**
-   * True when the relief raster should be drawn. The raster shows the sea floor and
-   * land surface *as they are today*, so it is only truthful at the present day; as
-   * soon as the user runs the clock the base map falls back to plain
-   * ocean-and-coastline, and the coastlines themselves move with their plates.
+   * True when the present-day relief raster is enabled and has decoded.
    */
   protected get showRelief(): boolean {
-    return (
-      this.model.showTopographyProperty.value && this.model.isPresentDayProperty.value && this.reliefImage !== null
-    );
+    return this.model.showTopographyProperty.value && this.reliefImage !== null;
   }
 
   public override paintCanvas(context: CanvasRenderingContext2D): void {
-    this.reconstruction.setTime(this.model.timeMillionsOfYearsProperty.value);
-
     context.save();
     this.clipToViewport(context);
 
@@ -210,13 +200,7 @@ export abstract class EarthCanvasNode extends CanvasNode {
   // ── Plates ──────────────────────────────────────────────────────────────────
 
   /**
-   * Washes each plate in its palette colour and outlines it.
-   *
-   * The outline vertices ride the boundaries beneath them rather than the plate
-   * itself (`PlateRecord.ringFrames`), which is what keeps neighbouring plates
-   * edge to edge while the clock runs instead of overlapping and leaving gaps. A
-   * plate therefore changes shape as well as position: it gains area along its
-   * spreading ridges and loses it at its trenches.
+   * Washes each present-day plate in its palette colour and outlines it.
    */
   protected paintPlates(context: CanvasRenderingContext2D): void {
     const palette = PlateTectonicsColors.platePaletteColorProperties;
@@ -276,17 +260,8 @@ export abstract class EarthCanvasNode extends CanvasNode {
    * distance on *both* sides of it, getting older and bluer out to the continental
    * margins. Nothing like it exists on land, because the sea floor is made at the
    * ridges and destroyed at the trenches while the continents stay.
-   *
-   * An isochron is frozen into the crust, so it rides its plate — vertex by vertex,
-   * because a single isochron crosses several plates. Running the clock backwards
-   * therefore walks the two halves of each pair back together onto the ridge that
-   * made them, and crust younger than the reconstruction has reached had not been
-   * made yet, so those isochrons are not drawn at all.
    */
   protected paintIsochrons(context: CanvasRenderingContext2D): void {
-    const timeMyr = this.model.timeMillionsOfYearsProperty.value;
-    const youngestExisting = timeMyr < 0 ? -timeMyr : 0;
-
     context.lineWidth = ISOCHRON_LINE_WIDTH;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -295,16 +270,10 @@ export abstract class EarthCanvasNode extends CanvasNode {
     // against a passive margin — the western Atlantic packs 100 Myr into a few degrees.
     for (let index = ISOCHRON_AGES_MA.length - 1; index >= 0; index--) {
       const ageMa = ISOCHRON_AGES_MA[index] as number;
-      if (ageMa < youngestExisting) {
-        continue;
-      }
       context.strokeStyle = seafloorAgeColor(ageMa).toCSS();
       context.beginPath();
       for (const isochron of ISOCHRONS) {
         if (isochron.ageMa === ageMa) {
-          // Torn where consecutive vertices ride different plates: an isochron really
-          // is cut and offset where a fracture zone crosses it, and once the clock has
-          // run the two pieces are hundreds of kilometres apart.
           this.appendFeature(context, isochron.coords, isochron.plateIndices, "open", true);
         }
       }

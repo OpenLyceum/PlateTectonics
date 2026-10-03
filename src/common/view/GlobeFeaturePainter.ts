@@ -3,11 +3,8 @@
  *
  * Turning a polyline of longitudes and latitudes into a canvas path on a globe.
  *
- * This is the hard half of drawing a sphere as a sphere, and it is shared by every
- * screen that does: the Earth screen's `GlobeCanvasNode` and the Deep Time
- * screen's `DeepTimeCanvasNode` paint completely different datasets, moved by
- * completely different reconstructions, but a coastline crossing the limb is the same
- * problem in both.
+ * The Earth screen's `GlobeCanvasNode` delegates its sphere-on-a-disc path work
+ * here: tracing coastlines, plate outlines and boundaries through the camera.
  *
  * ── The three cases ───────────────────────────────────────────────────────────
  *  - **Long segments** are subdivided along the great circle between their ends.
@@ -74,10 +71,9 @@ export type RingMode = "fill" | "stroke" | "open";
 /**
  * Anything that can carry a present-day geographic point to where it was.
  *
- * Both reconstructions in this sim satisfy this: `PlateReconstruction`, which spins
- * each plate about a fixed Euler pole at a constant rate, and
- * `DeepTimeReconstruction`, which interpolates a published model's sampled rotations.
- * The painter does not care which, only that `transform` writes {@link lon} and
+ * `PlateReconstruction` satisfies this interface; Earth keeps it at zero time so
+ * source coordinates remain unchanged. The painter only requires that `transform`
+ * writes {@link lon} and
  * {@link lat} — neither returns an object, because this runs tens of thousands of
  * times per frame.
  */

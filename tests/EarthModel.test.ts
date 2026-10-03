@@ -2,17 +2,15 @@
  * EarthModel.test.ts
  *
  * The screen model: layer visibility, the earthquake depth filter, the choice
- * between the globe and the flat map, and the geological-time clock.
+ * between the globe and the flat map.
  */
 
-import { TimeSpeed } from "scenerystack/scenery-phet";
 import { describe, expect, it } from "vitest";
-import { EarthModel, TIME_RANGE } from "../src/earth/model/EarthModel.js";
+import { EarthModel } from "../src/earth/model/EarthModel.js";
 import { depthBand, passesDepthFilter } from "../src/earth/model/EarthquakeDepthFilter.js";
-import { MYR_PER_SECOND, TIME_STEP_MYR } from "../src/PlateTectonicsConstants.js";
 
 describe("EarthModel", () => {
-  it("starts with every layer off, at the present day, on the globe", () => {
+  it("starts with every layer off on the globe", () => {
     const model = new EarthModel();
     expect(model.showPlatesProperty.value).toBe(false);
     expect(model.showGlobeProperty.value).toBe(true);
@@ -24,9 +22,6 @@ describe("EarthModel", () => {
     expect(model.showTopographyProperty.value).toBe(false);
     expect(model.showSeafloorAgeProperty.value).toBe(false);
     expect(model.earthquakeDepthFilterProperty.value).toBe("all");
-    expect(model.timeMillionsOfYearsProperty.value).toBe(0);
-    expect(model.isPresentDayProperty.value).toBe(true);
-    expect(model.timer.isPlayingProperty.value).toBe(false);
   });
 
   it("shows exactly one of the globe and the flat map", () => {
@@ -45,66 +40,6 @@ describe("EarthModel", () => {
     expect(shown()).toEqual(["globe"]);
   });
 
-  it("does not advance geological time while paused", () => {
-    const model = new EarthModel();
-    model.step(1);
-    expect(model.timeMillionsOfYearsProperty.value).toBe(0);
-  });
-
-  it("advances one million years per second at the normal speed", () => {
-    const model = new EarthModel();
-    model.timer.isPlayingProperty.value = true;
-    model.step(1);
-    expect(model.timeMillionsOfYearsProperty.value).toBeCloseTo(MYR_PER_SECOND, 6);
-  });
-
-  it("runs faster and slower when the speed changes", () => {
-    const model = new EarthModel();
-    model.timer.isPlayingProperty.value = true;
-
-    model.timeSpeedProperty.value = TimeSpeed.FAST;
-    const fast = model.millionYearsPerSecond;
-    model.timeSpeedProperty.value = TimeSpeed.SLOW;
-    const slow = model.millionYearsPerSecond;
-
-    expect(fast).toBeGreaterThan(MYR_PER_SECOND);
-    expect(slow).toBeLessThan(MYR_PER_SECOND);
-  });
-
-  it("stops at the end of the reconstruction range instead of wrapping", () => {
-    const model = new EarthModel();
-    model.timer.isPlayingProperty.value = true;
-    model.step(TIME_RANGE.max * 2);
-
-    expect(model.timeMillionsOfYearsProperty.value).toBe(TIME_RANGE.max);
-    expect(model.timer.isPlayingProperty.value).toBe(false);
-  });
-
-  it("steps by a fixed amount and clamps at the ends", () => {
-    const model = new EarthModel();
-    model.stepTime(1);
-    expect(model.timeMillionsOfYearsProperty.value).toBeCloseTo(TIME_STEP_MYR, 6);
-
-    model.stepTime(-1);
-    expect(model.timeMillionsOfYearsProperty.value).toBeCloseTo(0, 6);
-
-    model.timeMillionsOfYearsProperty.value = TIME_RANGE.min;
-    model.stepTime(-1);
-    expect(model.timeMillionsOfYearsProperty.value).toBe(TIME_RANGE.min);
-  });
-
-  it("resetTime returns to the present without touching the layers", () => {
-    const model = new EarthModel();
-    model.showVolcanoesProperty.value = true;
-    model.timeMillionsOfYearsProperty.value = -20;
-    model.timer.isPlayingProperty.value = true;
-
-    model.resetTime();
-    expect(model.timeMillionsOfYearsProperty.value).toBe(0);
-    expect(model.timer.isPlayingProperty.value).toBe(false);
-    expect(model.showVolcanoesProperty.value).toBe(true);
-  });
-
   it("reset() restores every property", () => {
     const model = new EarthModel();
     model.showPlatesProperty.value = true;
@@ -116,8 +51,6 @@ describe("EarthModel", () => {
     model.showTopographyProperty.value = true;
     model.showSeafloorAgeProperty.value = true;
     model.earthquakeDepthFilterProperty.value = "deep";
-    model.timeSpeedProperty.value = TimeSpeed.FAST;
-    model.timeMillionsOfYearsProperty.value = 33;
 
     model.reset();
 
@@ -130,8 +63,6 @@ describe("EarthModel", () => {
     expect(model.showTopographyProperty.value).toBe(false);
     expect(model.showSeafloorAgeProperty.value).toBe(false);
     expect(model.earthquakeDepthFilterProperty.value).toBe("all");
-    expect(model.timeSpeedProperty.value).toBe(TimeSpeed.NORMAL);
-    expect(model.timeMillionsOfYearsProperty.value).toBe(0);
   });
 });
 

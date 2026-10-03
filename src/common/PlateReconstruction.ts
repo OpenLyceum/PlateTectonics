@@ -2,7 +2,9 @@
  * PlateReconstruction.ts
  *
  * Plate kinematics: where a point on the Earth's surface was (or will be) after `t`
- * million years of today's plate motions.
+ * million years of today's plate motions. Earth uses `velocityAt` for its motion
+ * arrows and keeps its rendering transform at zero time. Nonzero-time rotations
+ * remain a numerical utility, exercised by tests rather than screen controls.
  *
  * Each plate in `PLATES` carries an Euler pole — an axis through the centre of the
  * Earth — and a rotation rate about it in degrees per million years, in the
@@ -14,8 +16,8 @@
  *   reconstruction.transform(lon, lat, frameIndex);    // writes .lon and .lat
  *
  * `transform` writes its result into public scratch fields instead of returning an
- * object: the map renderer calls it tens of thousands of times per frame while the
- * clock runs, and allocating there would dominate the frame budget.
+ * object: the map renderer calls it tens of thousands of times per camera repaint,
+ * and allocating there would dominate the frame budget.
  *
  * ── Why a *frame* index and not a plate index ─────────────────────────────────
  * Anything in the interior of a plate — a coastline, an epicentre, a volcano — rides
@@ -35,15 +37,15 @@
  * (`PlateRecord.ringFrames`), so two plates that share an edge carry it identically
  * and the mosaic stays closed. What changes through time is each plate's *area*:
  * it grows along its ridges and shrinks at its trenches, which is the sea floor being
- * made and unmade — the thing the reconstruction is there to show.
+ * made and unmade in the numerical extrapolation.
  *
- * ── Caveats worth teaching ────────────────────────────────────────────────────
+ * ── Caveats of nonzero-time extrapolation ────────────────────────────────────────────────────
  * This extrapolates *today's* velocities. It is a good approximation for the last
  * few million years, a rough sketch at ±50 Myr (plate motions change as ridges and
  * subduction zones are born and die), and says nothing about plates that no longer
  * exist. Plate interiors are treated as rigid, so the deformed belts along their
- * edges — the Andes, the Himalaya, the Basin and Range — are drawn as if they were
- * not deforming at all.
+ * edges — the Andes, the Himalaya, the Basin and Range — are not resolved by this
+ * utility.
  */
 
 import { EARTH_RADIUS_KM } from "../PlateTectonicsConstants.js";

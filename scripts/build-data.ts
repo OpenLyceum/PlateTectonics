@@ -37,11 +37,9 @@ import {
   ringCentroid,
   signedArea,
   simplify,
-  simplifyGreatCircle,
   toLonLat,
   toUnitVector,
 } from "./data/geo.js";
-import { type GPlatesModelData, resolvePlateHistory } from "./data/gplates.js";
 import { readNetCdf } from "./data/netcdf.js";
 
 const GENERATED_DIR = "src/common/data/generated";
@@ -1285,270 +1283,6 @@ async function buildRelief(): Promise<void> {
   console.log(`  wrote ${path}`);
 }
 
-// ── Deep-time plate history ───────────────────────────────────────────────────
-
-/**
- * Span and sampling of the baked reconstruction.
- *
- * 250 Ma is the full reach of the Müller et al. (2019) model, and takes the sim from
- * Pangaea to the present. The 5 Myr step is a straight trade against the size of the
- * generated module: topologies have to be baked per instant (see `dataTypes.ts`), so
- * halving the step doubles that file.
- */
-const HISTORY_END_MA = 250;
-const HISTORY_STEP_MYR = 5;
-
-/**
- * Simplification tolerances for the reconstructed geometry, in degrees of arc.
- *
- * Looser than the present-day datasets above, because there are fifty-one copies of
- * this geometry rather than one. At the size the globe is drawn half a degree is
- * about a pixel and a half.
- */
-const HISTORY_RING_TOLERANCE = 0.5;
-const HISTORY_BOUNDARY_TOLERANCE = 0.4;
-const HISTORY_COASTLINE_TOLERANCE = 0.35;
-
-/**
- * Deforming belts take a coarser tolerance than rigid plates. There are as many of
- * them as there are plates, and they are drawn as a wash showing *where* the
- * lithosphere is deforming rather than as a shape with a meaningful edge — the edge
- * of an orogen is a gradient in the model, not a line.
- */
-const HISTORY_DEFORMING_TOLERANCE = 1;
-
-/** Rings and lines left with fewer vertices than this after simplification are dropped. */
-const HISTORY_MIN_RING_VERTICES = 4;
-const HISTORY_MIN_LINE_VERTICES = 2;
-
-/** Flat `[lon, lat, …]` → `LonLat[]`, and back again with the coordinates rounded. */
-function toPairs(coords: readonly number[]): LonLat[] {
-  const pairs: LonLat[] = [];
-  for (let i = 0; i + 1 < coords.length; i += 2) {
-    pairs.push([coords[i] as number, coords[i + 1] as number]);
-  }
-  return pairs;
-}
-
-function toFlat(pairs: readonly LonLat[]): number[] {
-  return pairs.flatMap(([lon, lat]) => [round(lon, 2), round(lat, 2)]);
-}
-
-/** Simplifies one reconstructed feature, returning null when nothing usable is left. */
-function simplifyFeature(coords: readonly number[], tolerance: number, minVertices: number): number[] | null {
-  const simplified = simplifyGreatCircle(toPairs(coords), tolerance);
-  return simplified.length >= minVertices ? toFlat(simplified) : null;
-}
-
-/**
- * Builds the Deep Time screen's two generated modules from the GPlates model.
- *
- * The rotation table is de-duplicated before it is written: a model this detailed
- * carries several hundred plate IDs, and most of them are small terranes rigidly
- * attached to a major plate, so their rotation sequences are identical to it and to
- * each other. Sharing one row between them costs a level of indirection and saves
- * most of the table.
- */
-async function buildPlateHistory(): Promise<void> {
-  const data = await resolvePlateHistory(HISTORY_END_MA, HISTORY_STEP_MYR);
-
-  // ── Rotation table, de-duplicated ──
-  const slotOfSequence = new Map<string, number>();
-  const slotOfPlateId = new Map<number, number>();
-  const rotationRows: number[][] = [];
-
-  // Row 0 is reserved for the identity, and seeded before anything else so it keeps
-  // that index. Geometry that is *already* at the reconstructed instant — a resolved
-  // plate polygon, a resolved boundary — is drawn through the same painter as the
-  // coastlines, and needs a row that provably does not move it. A plate that happens
-  // never to rotate de-duplicates onto this row, which is correct.
-  const identityRow = data.times.flatMap(() => [0, 0, 0]);
-  slotOfSequence.set(identityRow.join(","), 0);
-  rotationRows.push(identityRow);
-
-  for (const [plateId, samples] of Object.entries(data.rotations)) {
-    const flat = samples.flatMap((sample) => [
-      round(sample[0] as number, 3),
-      round(sample[1] as number, 3),
-      round(sample[2] as number, 4),
-    ]);
-    const key = flat.join(",");
-    let slot = slotOfSequence.get(key);
-    if (slot === undefined) {
-      slot = rotationRows.length;
-      slotOfSequence.set(key, slot);
-      rotationRows.push(flat);
-    }
-    slotOfPlateId.set(Number(plateId), slot);
-  }
-
-  // ── Coastlines ──
-  const coastlines: { slot: number; coords: number[] }[] = [];
-  for (const piece of data.coastlines) {
-    const coords = simplifyFeature(piece.coords, HISTORY_COASTLINE_TOLERANCE, 3);
-    const slot = slotOfPlateId.get(piece.plateId);
-    if (coords && slot !== undefined) {
-      coastlines.push({ slot, coords });
-    }
-  }
-
-  // ── Snapshots ──
-  const snapshots = data.snapshots.map((snapshot) => {
-    const plates = snapshot.plates
-      .map((plate) => ({
-        plateId: plate.id,
-        // Only rigid plates are labelled, so a deforming mesh's internal name — they
-        // read like "Alpine_Deforming_Mesh_ELB" — is not worth carrying.
-        name: plate.deforming ? "" : plate.name,
-        deforming: plate.deforming,
-        ring: simplifyFeature(
-          plate.ring,
-          plate.deforming ? HISTORY_DEFORMING_TOLERANCE : HISTORY_RING_TOLERANCE,
-          HISTORY_MIN_RING_VERTICES,
-        ),
-      }))
-      .filter((plate) => plate.ring !== null);
-
-    const boundaries = (["divergent", "convergent", "transform"] as const).map((type) => ({
-      type,
-      lines: snapshot.boundaries
-        .filter((boundary) => boundary.type === type)
-        .map((boundary) => simplifyFeature(boundary.coords, HISTORY_BOUNDARY_TOLERANCE, HISTORY_MIN_LINE_VERTICES))
-        .filter((line): line is number[] => line !== null),
-    }));
-
-    return { timeMa: snapshot.time, plates, boundaries };
-  });
-
-  emitPlateHistory(data, rotationRows, slotOfPlateId, coastlines);
-  emitPlateSnapshots(data, snapshots);
-
-  const vertices =
-    snapshots.reduce(
-      (total, snapshot) =>
-        total +
-        snapshot.plates.reduce((sum, plate) => sum + (plate.ring as number[]).length / 2, 0) +
-        snapshot.boundaries.reduce(
-          (sum, set) => sum + set.lines.reduce((lineSum, line) => lineSum + line.length / 2, 0),
-          0,
-        ),
-      0,
-    ) + coastlines.reduce((total, piece) => total + piece.coords.length / 2, 0);
-  console.log(
-    `  ${snapshots.length} snapshots, ${rotationRows.length} distinct rotation sequences ` +
-      `(from ${slotOfPlateId.size} plate IDs), ${coastlines.length} coastline pieces, ${vertices} vertices`,
-  );
-}
-
-function emitPlateHistory(
-  data: GPlatesModelData,
-  rotationRows: readonly (readonly number[])[],
-  slotOfPlateId: ReadonlyMap<number, number>,
-  coastlines: readonly { slot: number; coords: readonly number[] }[],
-): void {
-  const rotations = rotationRows.map((row) => `  ${numberArray(row)},`).join("\n");
-  const coastlineEntries = coastlines
-    .map((piece) => `  { rotationSlot: ${piece.slot}, coords: ${numberArray(piece.coords)} },`)
-    .join("\n");
-  const slots = [...slotOfPlateId.entries()].map(([plateId, slot]) => `  ${plateId}: ${slot},`).join("\n");
-
-  writeGeneratedModule(
-    `${GENERATED_DIR}/plateHistoryData.ts`,
-    `Continuous half of the Müller et al. (2019) reconstruction: the rotation table
-that carries every static feature, and the present-day coastlines it carries.
-
-HISTORY_TIMES_MA gives the sample times. HISTORY_ROTATIONS holds one row per
-distinct motion, three numbers per sample — Euler pole latitude, pole longitude and
-the total rotation angle in degrees, measured from the present day. Rows are shared
-by every plate ID that moves identically, which is most of them. Row 0 is always the
-identity, for geometry that is already at the instant being drawn.
-
-Applying a row's rotation to present-day geometry puts it where it was; interpolating
-between two samples is what lets the continents glide rather than jump. See
-DeepTimeReconstruction.ts.`,
-    `import type { HistoryCoastline } from "../dataTypes.js";
-
-/** The model this was built from, for the credits and the legend. */
-export const HISTORY_MODEL = ${JSON.stringify("Müller et al. (2019)")};
-
-/** Sample times in millions of years before present, ascending from zero. */
-export const HISTORY_TIMES_MA: readonly number[] = ${numberArray(data.times as number[])};
-
-/** Total reconstruction rotations: 3 numbers (poleLat, poleLon, angleDeg) per sample time. */
-export const HISTORY_ROTATIONS: readonly (readonly number[])[] = [
-${rotations}
-];
-
-/** GPlates plate ID → row of {@link HISTORY_ROTATIONS}. */
-export const HISTORY_ROTATION_SLOTS: Readonly<Record<number, number>> = {
-${slots}
-};
-
-export const HISTORY_COASTLINES: readonly HistoryCoastline[] = [
-${coastlineEntries}
-];
-`,
-  );
-}
-
-function emitPlateSnapshots(
-  data: GPlatesModelData,
-  snapshots: readonly {
-    timeMa: number;
-    plates: readonly { plateId: number; name: string; deforming: boolean; ring: number[] | null }[];
-    boundaries: readonly { type: string; lines: readonly number[][] }[];
-  }[],
-): void {
-  const entries = snapshots
-    .map((snapshot) => {
-      const plates = snapshot.plates
-        .map(
-          (plate) =>
-            `      { plateId: ${plate.plateId}, name: ${JSON.stringify(plate.name)}, ` +
-            `deforming: ${plate.deforming},\n        ring: ${numberArray(plate.ring as number[])} },`,
-        )
-        .join("\n");
-      const boundaries = snapshot.boundaries
-        .map(
-          (set) =>
-            `      { type: ${JSON.stringify(set.type)}, lines: [\n` +
-            `${set.lines.map((line) => `        ${numberArray(line)},`).join("\n")}\n      ] },`,
-        )
-        .join("\n");
-      return `  {
-    timeMa: ${snapshot.timeMa},
-    plates: [
-${plates}
-    ],
-    boundaries: [
-${boundaries}
-    ],
-  },`;
-    })
-    .join("\n");
-
-  writeGeneratedModule(
-    `${GENERATED_DIR}/plateSnapshotData.ts`,
-    `Stepped half of the Müller et al. (2019) reconstruction: the plates that existed
-at each sample time and the boundaries between them, resolved with pyGPlates.
-
-Unlike a coastline, a plate polygon has no present-day geometry to rotate — it is
-rebuilt at each instant from whichever boundary features bounded it then, and plates
-appear and vanish as ocean basins open and close. So this is baked per instant, and
-the Deep Time screen snaps it to the nearest sample while the continents glide.
-
-\`deforming\` marks an orogen or a rift, where the model explicitly does not treat the
-lithosphere as rigid.`,
-    `import type { PlateHistorySnapshot } from "../dataTypes.js";
-
-/** The ${data.snapshots.length} reconstructed instants, ascending in age from the present day. */
-export const PLATE_SNAPSHOTS: readonly PlateHistorySnapshot[] = [
-${entries}
-];
-`,
-  );
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -1557,7 +1291,7 @@ ${entries}
  * `plate-model` covers the plates, their boundaries and the motion frames together,
  * because those three index into each other and only mean anything as a set.
  */
-const STEPS = ["plate-model", "land", "earthquakes", "volcanoes", "seafloor-age", "relief", "plate-history"] as const;
+const STEPS = ["plate-model", "land", "earthquakes", "volcanoes", "seafloor-age", "relief"] as const;
 type Step = (typeof STEPS)[number];
 
 async function main(): Promise<void> {
@@ -1613,11 +1347,6 @@ async function main(): Promise<void> {
   if (wanted("relief")) {
     console.log("Building relief raster…");
     await buildRelief();
-  }
-
-  if (wanted("plate-history")) {
-    console.log("Building deep-time plate history…");
-    await buildPlateHistory();
   }
 
   console.log("\nDone.");

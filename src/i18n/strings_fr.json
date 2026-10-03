@@ -3,8 +3,7 @@
   "screens": {
     "earth": "Terre",
     "crust": "Croûte",
-    "plateMotion": "Mouvement des plaques",
-    "deepTime": "Temps géologique"
+    "plateMotion": "Mouvement des plaques"
   },
   "crust": {
     "myCrust": "Ma croûte",
@@ -79,19 +78,6 @@
     "automatic": "Automatique",
     "manual": "Manuel"
   },
-  "deepTime": {
-    "title": "Temps géologique",
-    "present": "Aujourd'hui",
-    "age": "il y a {{value}} millions d'années",
-    "layers": "Afficher",
-    "coastlines": "Continents",
-    "plates": "Plaques",
-    "boundaries": "Limites de plaques",
-    "deforming": "Zones de déformation",
-    "model": "Reconstruction : Müller et al. (2019)",
-    "rate": "1 seconde = 10 millions d'années",
-    "snapshotNote": "Les plaques et les limites avancent par pas de 5 millions d'années"
-  },
   "views": {
     "title": "Vue",
     "flatMap": "Carte plate",
@@ -115,15 +101,6 @@
     "shallow": "Superficiel (< 70 km)",
     "intermediate": "Intermédiaire (70–300 km)",
     "deep": "Profond (> 300 km)"
-  },
-  "time": {
-    "title": "Temps géologique",
-    "present": "Aujourd'hui",
-    "past": "il y a {{value}} millions d'années",
-    "future": "dans {{value}} millions d'années",
-    "rate": "1 seconde = 1 million d'années",
-    "reconstruction": "Positions des plaques extrapolées du mouvement actuel",
-    "topographyAtPresent": "Relief affiché uniquement à l'époque actuelle"
   },
   "plateLabels": {
     "speed": "{{value}} mm/an",
@@ -175,10 +152,10 @@
     "earth": {
       "screenSummary": {
         "playArea": "La zone de jeu affiche les plaques tectoniques de la Terre, dessinées sur un globe que l'on peut faire tourner ou sur une carte plate. Des couches de données réelles peuvent y être superposées : limites de plaques colorées par type, flèches du mouvement des plaques, épicentres de séismes, volcans et points chauds, relief ombré de la surface terrestre et du fond océanique, et isochrones du plancher océanique — des lignes d'égal âge de la croûte, parallèles aux dorsales et de plus en plus anciennes en s'en éloignant.",
-        "controlArea": "La zone de contrôle comporte un interrupteur entre le globe et la carte plate, une case à cocher pour chaque couche de données, un filtre de profondeur des séismes, des commandes qui font avancer et reculer le mouvement des plaques dans le temps géologique, et un bouton Tout réinitialiser.",
+        "controlArea": "La zone de commandes comporte un sélecteur entre le globe et la carte plane, une case à cocher pour chaque couche de données, un filtre de profondeur des séismes et un bouton Tout réinitialiser.",
         "interactionHint": "Activez deux couches et cherchez où elles coïncident : séismes et volcans autour du Pacifique, ou dorsales et séismes superficiels au milieu de l'Atlantique."
       },
-      "currentDetails": "{{view}} {{layers}} {{depths}} {{time}}",
+      "currentDetails": "{{view}} {{layers}} {{depths}}",
       "viewDetails": {
         "global": "La carte plate est affichée. Elle peut être déplacée vers l'est et vers l'ouest, et agrandie pour examiner une région de près.",
         "globe": "La Terre est affichée en globe, que l'on peut faire tourner pour amener n'importe quelle région dans le champ de vision."
@@ -190,11 +167,6 @@
         "shallow": "Seuls les séismes superficiels, à moins de 70 kilomètres de profondeur, sont affichés.",
         "intermediate": "Seuls les séismes de profondeur intermédiaire, entre 70 et 300 kilomètres, sont affichés.",
         "deep": "Seuls les séismes profonds, à plus de 300 kilomètres, sont affichés."
-      },
-      "timeDetails": {
-        "present": "Les plaques sont dans leurs positions actuelles.",
-        "past": "Les plaques sont montrées telles qu'elles étaient il y a environ {{value}} millions d'années.",
-        "future": "Les plaques sont montrées telles qu'elles seraient dans environ {{value}} millions d'années."
       },
       "controls": {
         "viewSwitchHelp": "Dessiner la Terre comme un globe que l'on peut faire tourner, ou comme une carte rectangulaire plate.",
@@ -213,10 +185,7 @@
         "topography": "Topographie et bathymétrie",
         "seafloorAge": "Isochrones d'âge du plancher océanique",
         "depthFilter": "Profondeur des séismes",
-        "depthFilterHelp": "Affichez les séismes de toutes les profondeurs, ou d'une seule tranche de profondeur.",
-        "timeSlider": "Temps géologique",
-        "timeSliderHelp": "Déplacez les plaques vers le passé ou vers le futur, en millions d'années.",
-        "resetTime": "Revenir à l'époque actuelle"
+        "depthFilterHelp": "Affichez les séismes de toutes les profondeurs, ou d'une seule tranche de profondeur."
       }
     },
     "crust": {
@@ -300,30 +269,6 @@
       },
       "modeAutomatic": "L'horloge avance seule.",
       "modeManual": "Le temps n'avance que lorsqu'une poignée de plaque est déplacée."
-    },
-    "deepTime": {
-      "screenSummary": {
-        "playArea": "La zone de jeu montre un globe portant une reconstruction publiée des plaques terrestres au cours des 250 derniers millions d'années. Les continents se déplacent de façon continue, tandis que les plaques et leurs limites sont reconstruites tous les cinq millions d'années, car les plaques elles-mêmes naissent et disparaissent avec l'ouverture et la fermeture des océans.",
-        "controlArea": "La zone de contrôle comporte une case à cocher par couche, un curseur et des commandes de lecture qui remontent de l'époque actuelle jusqu'à 250 millions d'années, ainsi qu'un bouton Réinitialiser tout.",
-        "interactionHint": "Remontez le temps et regardez l'Atlantique se refermer : il y a 250 millions d'années, tous les continents sont rassemblés en Pangée."
-      },
-      "currentDetails": "{{time}} {{layers}}",
-      "timeDetails": {
-        "present": "Le globe montre la Terre telle qu'elle est aujourd'hui.",
-        "past": "Le globe montre la Terre telle qu'elle était il y a environ {{value}} millions d'années."
-      },
-      "layersDetails": "Couches affichées : {{layers}}.",
-      "noLayers": "Aucune couche n'est affichée.",
-      "controls": {
-        "globe": "Globe reconstruit",
-        "globeHelp": "Faites glisser le globe pour faire tourner la Terre. Lorsque le globe est sélectionné, les flèches gauche et droite déplacent la vue vers l'est et l'ouest, et les flèches haut et bas vers le nord et le sud.",
-        "timeSlider": "Temps géologique",
-        "timeSliderHelp": "Déplacez le curseur pour choisir un âge, de l'époque actuelle jusqu'à 250 millions d'années.",
-        "coastlines": "Afficher les continents, portés par les plaques sur lesquelles ils reposent.",
-        "plates": "Afficher les plaques tectoniques existant à cet âge.",
-        "boundaries": "Afficher les limites de plaques, colorées par type.",
-        "deforming": "Afficher les zones où le modèle considère la lithosphère comme déformable plutôt que rigide."
-      }
     },
     "blockView": {
       "sectionView": "Vue de la coupe",

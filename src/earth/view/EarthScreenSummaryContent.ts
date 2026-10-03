@@ -6,15 +6,12 @@
  *
  * `currentDetailsContent` is derived from the model, so a screen-reader user who
  * re-reads the summary always hears which view is on screen, which data layers are
- * drawn, which earthquake depths pass the filter, and where in geological time the
- * plates are — the same information a sighted user reads off the map.
+ * drawn, and which earthquake depths pass the filter. All geography is present-day.
  */
 
 import { DerivedStringProperty, PatternStringProperty } from "scenerystack/axon";
-import { toFixed } from "scenerystack/dot";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
-import { PRESENT_DAY_TOLERANCE_MYR } from "../../PlateTectonicsConstants.js";
 import type { EarthModel } from "../model/EarthModel.js";
 import type { EarthquakeDepthFilter } from "../model/EarthquakeDepthFilter.js";
 
@@ -105,25 +102,6 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
       },
     );
 
-    // Where in geological time the plates are.
-    const magnitudeOfTime = new DerivedStringProperty([model.timeMillionsOfYearsProperty], (time: number) =>
-      toFixed(Math.abs(time), 0),
-    );
-    const timeDescription = new DerivedStringProperty(
-      [
-        model.timeMillionsOfYearsProperty,
-        a11y.timeDetails.presentStringProperty,
-        new PatternStringProperty(a11y.timeDetails.pastStringProperty, { value: magnitudeOfTime }),
-        new PatternStringProperty(a11y.timeDetails.futureStringProperty, { value: magnitudeOfTime }),
-      ],
-      (time: number, present: string, past: string, future: string) => {
-        if (Math.abs(time) <= PRESENT_DAY_TOLERANCE_MYR) {
-          return present;
-        }
-        return time < 0 ? past : future;
-      },
-    );
-
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
@@ -131,7 +109,6 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
         view: viewDescription,
         layers: layersDescription,
         depths: depthDescription,
-        time: timeDescription,
       }),
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });

@@ -9,7 +9,7 @@
  * The flat map's hard cases (the antimeridian, circumpolar rings) simply do not
  * arise here: a sphere has no seam and no edges. They are replaced by one case of
  * its own — the limb, the circle where the near hemisphere ends — and all of it lives
- * in {@link GlobeFeaturePainter}, which the Deep Time screen's globe shares. Points
+ * in {@link GlobeFeaturePainter}. Points
  * facing away are dropped by `EarthProjection.project` in the base class.
  *
  * `clipToViewport` clips to the *disc* rather than to the viewport rectangle, because

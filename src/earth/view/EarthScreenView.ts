@@ -9,8 +9,8 @@
  *   │ │ globe  ·or·  flat map                │ │ layers        │
  *   │ └──────────────────────────────────────┘ │ depth filter  │
  *   │ legend                                   │               │
- *   │ ┌──────────────────────────────────┐     └───────────────┘
- *   │ │ geological time                  │ reset               │
+ *   │                                         └───────────────┘
+ *   │                                      reset               │
  *   └──────────────────────────────────────────────────────────┘
  *
  * The flat map and the globe share one viewport, and the view switch decides which of
@@ -48,11 +48,9 @@ import { LayerControlPanel } from "./LayerControlPanel.js";
 import { MapCanvasNode } from "./MapCanvasNode.js";
 import { MapLegendNode } from "./MapLegendNode.js";
 import { PlateOverlayNode } from "./PlateOverlayNode.js";
-import { TimeControlPanel } from "./TimeControlPanel.js";
 import { ViewControlPanel } from "./ViewControlPanel.js";
 
 const TITLE_FONT = new PhetFont({ size: 17, weight: "bold" });
-const NOTE_FONT = new PhetFont(11);
 
 export type EarthScreenViewOptions = ScreenViewOptions;
 
@@ -169,7 +167,7 @@ export class EarthScreenView extends ScreenView {
       globeOverlay.visible = showLabels;
     });
 
-    // ── Title and reconstruction note ─────────────────────────────────────────
+    // ── Title ─────────────────────────────────────────
     const title = new Text(strings.getScreenNames().earthStringProperty, {
       font: TITLE_FONT,
       fill: PlateTectonicsColors.textColorProperty,
@@ -177,19 +175,6 @@ export class EarthScreenView extends ScreenView {
       bottom: MAP_VIEW_BOUNDS.minY - 8,
     });
     this.addChild(title);
-
-    // Shown only while the plates are away from their present-day positions, where
-    // the relief raster no longer matches the geometry on screen.
-    const reconstructionNote = new Text(strings.getTimeStrings().reconstructionStringProperty, {
-      font: NOTE_FONT,
-      fill: PlateTectonicsColors.secondaryTextColorProperty,
-      right: MAP_VIEW_BOUNDS.maxX,
-      bottom: MAP_VIEW_BOUNDS.minY - 9,
-    });
-    this.addChild(reconstructionNote);
-    model.isPresentDayProperty.link((isPresentDay: boolean) => {
-      reconstructionNote.visible = !isPresentDay;
-    });
 
     // ── Legend ────────────────────────────────────────────────────────────────
     const legend = new MapLegendNode({
@@ -207,19 +192,11 @@ export class EarthScreenView extends ScreenView {
       right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
       top: viewPanel.bottom + PANEL_SPACING,
     });
-    // Geological time goes under the map, as one row: stacked under the layers, the
-    // column is taller than the screen.
-    const timePanel = new TimeControlPanel(model, {
-      left: MAP_VIEW_BOUNDS.minX,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
-    });
     this.addChild(viewPanel);
     this.addChild(layerPanel);
-    this.addChild(timePanel);
 
     // ── Reset All ─────────────────────────────────────────────────────────────
-    // Bottom-right of the play area rather than of the whole screen, beside the time
-    // panel and clear of the control column.
+    // Bottom-right of the play area, clear of the control column.
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
@@ -246,7 +223,6 @@ export class EarthScreenView extends ScreenView {
           mapZoomButtons,
           ...viewPanel.focusOrder,
           ...layerPanel.focusOrder,
-          ...timePanel.focusOrder,
           resetAllButton,
         ],
       }),
@@ -273,8 +249,7 @@ export class EarthScreenView extends ScreenView {
   }
 
   /**
-   * The reconstruction is driven by the model clock, which the Sim steps; the canvas
-   * nodes repaint from their Property links, so nothing is needed here.
+   * The canvas nodes repaint from layer and camera Property links.
    */
   public override step(_dt: number): void {
     // Intentionally empty — see the class documentation.

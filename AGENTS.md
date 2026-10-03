@@ -4,15 +4,13 @@ Sim-specific context for AI assistants. General SceneryStack guidance: [OpenLyce
 
 ## Project
 
-Four screens. **Earth** is an interactive map of the Earth's tectonic plates,
-drawn either on a rotatable 3-D globe (the default) or on a pannable flat map;
+Three screens. **Earth** is an interactive present-day map of the Earth's tectonic
+plates, drawn either on a rotatable 3-D globe (the default) or on a pannable flat map;
 everything on it is real data — plate model, earthquakes, volcanoes, elevation.
-**Crust** and **Plate Motion** are ports of the two tabs of PhET's Java simulation
+It has no geological-time slider or reconstruction playback. **Crust** and **Plate
+Motion** are ports of the two tabs of PhET's Java simulation
 (`Baseline/PhET/trunk/simulations-java/simulations/plate-tectonics/`), and are
-schematic rather than data-driven. **Deep Time** replays a published plate
-reconstruction (Müller et al. 2019) from the present day back to Pangaea at 250 Ma —
-where the Earth screen extrapolates today's velocities, this one plays back a model
-fitted to the geological record.
+schematic rather than data-driven.
 
 Changes that affect what is drawn should be checked against
 [`doc/model.md`](doc/model.md), which records where each number comes from and what
@@ -25,7 +23,7 @@ Forked from [SceneryStackTemplate](https://github.com/OpenLyceum/SceneryStackTem
 | File | Purpose |
 |---|---|
 | `src/PlateTectonicsColors.ts` | All `ProfileColorProperty` instances, including the plate palette |
-| `src/PlateTectonicsConstants.ts` | Layout px, Earth-science quantities, geological-time range |
+| `src/PlateTectonicsConstants.ts` | Layout px, Earth-science quantities, schematic timing |
 | `src/PlateTectonicsNamespace.ts` | Namespace for color property names |
 | `src/i18n/StringManager.ts` | Singleton localized string accessor |
 | `src/common/EarthProjection.ts` | The interface both projections implement |
@@ -81,15 +79,9 @@ Forked from [SceneryStackTemplate](https://github.com/OpenLyceum/SceneryStackTem
 | `src/plate-motion/view/PlateMotionLabelsNode.ts` | The drop zones and every name on the section |
 | `src/plate-motion/view/PlateHandleNode.ts` | Manual mode: drag a plate, and the drag runs the clock |
 | `src/plate-motion/view/PlayModeControl.ts` | Automatic / Manual |
-| `src/common/DeepTimeReconstruction.ts` | Slerps a published model's sampled rotations; `IDENTITY_ROTATION_SLOT` |
-| `src/common/view/GlobeFeaturePainter.ts` | **Sphere-on-a-disc path work**, shared by both globes |
-| `src/common/data/generated/plateHistoryData.ts` | Rotation table + coastlines — the half that moves *continuously* |
-| `src/common/data/generated/plateSnapshotData.ts` | Resolved plates and boundaries per 5 Myr — the half that *steps* |
-| `src/deep-time/model/DeepTimeModel.ts` | Deep Time state; the 0–250 Ma clock |
-| `src/deep-time/view/DeepTimeCanvasNode.ts` | The reconstructed globe |
+| `src/common/view/GlobeFeaturePainter.ts` | **Sphere-on-a-disc path work** for the Earth globe |
 | `scripts/build-data.ts` | Fetches and reshapes every dataset |
 | `scripts/data/` | Fetch cache, GeoTIFF and netCDF readers, geodesy, contouring, emitters |
-| `scripts/data/gplates.ts` + `gplates/resolve.py` | Resolves the deep-time model via pyGPlates (build-time only) |
 
 ### Common components
 
@@ -114,9 +106,9 @@ Anything drawn on a light control surface (checkbox ticks, combo items) must use
 
 ### TimeModel
 
-`EarthModel` composes `TimeModel` for play/pause and elapsed wall-clock time.
-The *reconstruction* clock is a separate `timeMillionsOfYearsProperty`, advanced in
-`step()` at `millionYearsPerSecond` and clamped to ±50 Myr.
+`PlateMotionModel` composes `TimeModel` for play/pause and elapsed wall-clock time.
+Its schematic geological clock is `timeMillionsOfYearsProperty`. `EarthModel` has
+no clock; it selects present-day data layers and the globe or flat map.
 
 ## Model
 
@@ -127,12 +119,11 @@ Physics and behavior: `doc/model.md`.
 The three required layers are wired up:
 
 - `EarthScreenSummaryContent` builds a **live** `currentDetails` paragraph
-  from the model — globe or flat map, layers, depth filter, geological time.
+  from the model — globe or flat map, layers and depth filter.
 - Every control has an `accessibleName` from the `a11y` string group; several have
   `accessibleHelpText`.
 - `EarthScreenView` sets an explicit `pdomOrder` ending at Reset All, and
-  `EarthKeyboardHelpContent` documents sliders, moving the Earth and basic
-  actions.
+  `EarthKeyboardHelpContent` documents moving the Earth and basic actions.
 
 A11y strings live under `a11y.earth` in each locale JSON, exposed via
 `StringManager.getEarthA11yStrings()`. Full checklist:
@@ -167,9 +158,8 @@ open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins th
 | Path | Purpose |
 |---|---|
 | `tests/PlateReconstruction.test.ts` | Euler-pole rotation; plate speeds against published values |
-| `tests/DeepTimeReconstruction.test.ts` | Deep time as claims about the Earth: India's drift, Pangaea at 250 Ma, the identity row |
 | `tests/PlateEvolution.test.ts` | The mosaic staying closed; what each boundary rides; plate areas |
-| `tests/EarthModel.test.ts` | Layer state, depth bands, time clock, reset |
+| `tests/EarthModel.test.ts` | Layer state, depth bands, view selection, reset |
 | `tests/MapProjection.test.ts` | Projection round trips, 2:1 viewport, motion-arrow bearings |
 | `tests/GlobeProjection.test.ts` | Orthographic projection and its inverse, visibility, bearings, camera |
 | `tests/geophysicalData.test.ts` | Integrity of the generated datasets |
@@ -233,51 +223,29 @@ Pacific; the Atlantic isochrons step out symmetrically from the ridge as they ge
 older). Run `npm test` after any regeneration.
 
 `npm run build-data` with no arguments rebuilds everything. Naming steps —
-`plate-model`, `land`, `earthquakes`, `volcanoes`, `seafloor-age`, `relief`,
-`plate-history` — rebuilds only those, which is how the PB2002 model can be regenerated
-without also pulling a newer earthquake catalogue and a fresh DEM into an unrelated
-diff. `plate-model` covers the plates, their boundaries and the motion frames
+`plate-model`, `land`, `earthquakes`, `volcanoes`, `seafloor-age`, `relief` — rebuilds
+only those, so the PB2002 model can be regenerated without also pulling a newer
+earthquake catalogue and a fresh DEM into an unrelated diff. `plate-model` covers the plates, their boundaries and the motion frames
 together, because those three index into each other.
 
-**`plate-history` is the one step that needs Python.** It creates its own virtualenv
-under `.cache/gplates/`, installs `pygplates`, downloads the Müller et al. (2019)
-model, and resolves 51 instants; the resolved JSON is cached, so re-running to re-tune
-simplification is cheap. Nothing about GPlates or Python is needed by `npm run build`,
-`npm test` or the shipped sim — they read the committed output like any other dataset.
-It also needs `unzip` on the PATH.
+### Present-day geographic transforms
 
-### What moves when the clock runs
-
-Only `timeMillionsOfYearsProperty` evolves, and `PlateReconstruction` turns it into a
-rotation per **motion frame** — `MOTION_FRAMES` is the plates first (so a plate index
-is a frame index) then the rotations derived for the boundaries. Anything inside a
-plate rides that plate; a boundary rides the mean of its two plates, or the overriding
-plate at a trench; a plate *outline* rides a positional blend of the boundaries near
-it, which is what keeps neighbouring plates edge to edge instead of overlapping and
-gapping. The rules and their justification are in
-[`doc/model.md`](doc/model.md#what-carries-what) — read it before changing what any
-feature rides, and note that a frame index is **not** interchangeable with a plate
-index outside the first `PLATES.length` entries.
+Earth draws source coordinates at the present day. Its canvas uses
+`PlateReconstruction` at zero time as an identity transform, while motion arrows use
+`PlateReconstruction.velocityAt` for present-day velocities. The retained motion
+frames and rotation utilities have numerical tests, but no Earth clock or playback
+controls. A frame index is **not** interchangeable with a plate index outside the
+first `PLATES.length` entries.
 
 ### The three screens
 
-`Earth` and `Deep Time` are data-driven: every feature on their globes is a published
-dataset. `Crust` and `Plate Motion` are schematic and compute their own geometry — they
-are where the cross-sections live.
+`Earth` is data-driven: every geographic layer comes from a published dataset or
+the documented hotspot list. `Crust` and `Plate Motion` are schematic and compute
+their own geometry — they are where the cross-sections live.
 
-**On Deep Time the data comes in two shapes, and the difference is visible.** A
-coastline is a static feature cookie-cut by plate ID, so it reconstructs as one rigid
-rotation and rides an interpolated rotation table — the continents *glide*. A plate
-polygon has no present-day geometry to rotate: it is resolved afresh at each instant,
-and plates are born and die, so it is baked per 5 Myr and *steps*. Do not try to
-"fix" the stepping by interpolating snapshots — read
-[`doc/model.md`](doc/model.md#the-deep-time-screen) first.
-
-**Both globes share `GlobeFeaturePainter`**, which is the sphere-on-a-disc work
-(subdividing long segments, cutting at the limb, closing a polygon that runs round the
-back). It takes a `SurfaceTransform`, which both `PlateReconstruction` and
-`DeepTimeReconstruction` satisfy. Resolved geometry is already at its instant and is
-handed `IDENTITY_ROTATION_SLOT` so the painter does not rotate it twice.
+`GlobeFeaturePainter` handles sphere-on-a-disc paths for the Earth globe: subdividing
+long segments, cutting at the limb and closing polygons that run round the back.
+It takes a `SurfaceTransform`; Earth's transform is the identity at zero time.
 
 **On Plate Motion, time is a parameter, not an integrator.** `PlateGeometry` is a pure
 function of elapsed time; nothing accumulates shape. That is what makes Rewind,
@@ -311,9 +279,10 @@ trace.
 ### Rendering
 
 The global map and the schematic cross-sections are `CanvasNode`s, not trees of
-`Path`s, because every feature moves when the reconstruction clock runs — see the
-rationale in each file's header and in `doc/implementation-notes.md`. Text stays as Scenery `Text` so it can be
-localized and reached by a screen reader.
+`Path`s, because camera changes move every projected geographic feature and the
+schematic geometry evolves — see the rationale in each file's header and in
+`doc/implementation-notes.md`. Text stays as Scenery `Text` so it can be localized
+and reached by a screen reader.
 
 Sphere-on-a-rectangle hazards (antimeridian wrapping, circumpolar rings, ring closure,
 coastlines tearing at plate boundaries, the seams the datasets were cut along) are all

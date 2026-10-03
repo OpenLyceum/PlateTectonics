@@ -4,22 +4,15 @@ What the simulation claims about the Earth, where those claims come from, and wh
 it stops being a model of anything. Companion to
 [implementation-notes.md](./implementation-notes.md), which targets developers.
 
-## The one moving part
+## The Earth screen
 
-Everything on screen except the plate *positions* is a fixed observational dataset.
-The only state that evolves is a single number, `timeMillionsOfYearsProperty`: how
-far the reconstruction has been run from the present day, negative into the past.
+Earth shows fixed present-day geography on a rotatable globe or a pannable, zoomable
+flat map. Layer switches and the earthquake depth filter select which observational
+datasets are drawn. The camera changes the view; it does not move the plates through
+geological time. There is no geological-time slider or reconstruction playback.
 
 Each plate carries an **Euler pole** — an axis through the centre of the Earth — and
-a rotation rate about it. Moving a point on a plate by `t` million years is one
-rotation:
-
-```
-θ = rate (°/Myr) × t (Myr)          about the plate's pole
-```
-
-`PlateReconstruction` evaluates that with Rodrigues' rotation formula. Because the
-rotation is rigid, a point's velocity over the ground is
+a rotation rate about it. Its present-day velocity over the ground is
 
 ```
 v = ω × r
@@ -27,8 +20,9 @@ v = ω × r
 
 with `ω` the rotation vector and `r` the position vector. With `ω` in radians per
 million years and `r` in km, `|v|` comes out in km/Myr, which is numerically the same
-as mm/year — the unit plate speeds are quoted in. That is what the motion vectors on
-the map show, and it is why the Nazca arrow is long and the Antarctic arrow is a stub.
+as mm/year — the unit plate speeds are quoted in. `PlateReconstruction.velocityAt`
+computes the motion vectors on the map: the Nazca arrow is long and the Antarctic
+arrow is a stub. These arrows describe velocities at today's positions.
 
 ## Where the numbers come from
 
@@ -70,39 +64,6 @@ recomputing it as `|ω₁ × r − ω₂ × r|` matches the published value to a
 frame — leaves a residual equivalent to 0.009 °/Myr, about 1 mm/yr at the equator, so
 the frame really is the one it claims to be.
 
-## What carries what
-
-A plate's interior moves with the plate. A plate **boundary** cannot: it belongs to
-two plates at once, and carrying it with either one drives it into the other. That is
-where the gaps and overlaps in a naive reconstruction come from — run the clock to the
-end of the slider and the two sides of a typical boundary end up some 1 600 km apart,
-tearing the map open along the ridges and piling it up at the trenches.
-
-So boundaries are given rotations of their own:
-
-| Boundary | What it rides | Why |
-|---|---|---|
-| Spreading ridge | mean of the two plates' rotation vectors | where the axis sits when accretion is symmetric |
-| Transform fault | mean of the two | stationary with respect to a fault the plates merely slide along |
-| Subduction zone | the **overriding** plate | a trench is a feature of the plate that stays; the other is being consumed |
-
-PB2002 names each boundary section with a separator that doubles as a cross-section
-through it — `-` where neither plate descends, `\` where the left-hand plate descends
-beneath the right, `/` where the right-hand one does — so `NZ\SA` is Nazca going down
-under South America and `TO/PA` is the Pacific going down under Tonga. That is where
-the overriding plate is read from.
-
-Plate outlines are then carried by the boundary network rather than by the plate
-inside them, each vertex taking a distance-weighted blend of the boundary motions near
-it. Because the blend depends on *position alone*, two plates that share an edge carry
-it identically and the mosaic stays a mosaic. What changes through time is each
-plate's **area**: it grows along its spreading ridges and shrinks at its trenches,
-which is sea floor being made and unmade, and is the thing worth watching.
-
-The outlines are subdivided until this stops showing: an edge whose ends ride motions
-far enough apart to stretch it by more than 200 km over the slider's range is split
-and reconsidered. `tests/PlateEvolution.test.ts` holds the whole scheme in place.
-
 ## Seafloor isochrons
 
 The **Seafloor age** layer draws the ocean floor's isochrons: the lines along which
@@ -127,12 +88,8 @@ steps:
    all been subducted, while the continents carry rock a *hundred* times older. The
    sea floor is not old and permanent; it is a conveyor.
 
-An isochron is frozen into the crust, so unlike a plate boundary it rides its plate —
-vertex by vertex, because one isochron can cross several. Two consequences follow when
-the clock runs, and both are honest rather than cosmetic. The two flanks of a pair walk
-back towards the ridge that made them. And crust younger than the reconstruction has
-reached did not exist yet, so at 50 Myr ago the 10, 20 and 40 Ma isochrons are simply
-not drawn.
+Every isochron is drawn at its present-day position and coloured by its measured
+crustal age. Its age does not set a playback time.
 
 ## Earthquake depth bands
 
@@ -155,104 +112,22 @@ world's subduction zones and nothing else — which is the point of the control.
    a continuous mountain range down the middle of the Atlantic, marked by shallow
    earthquakes and no deep ones at all. Then add **Seafloor age** and turn the other
    layers off: the isochrons fan out from that same mountain range, matched pair by
-   matched pair, red at the axis and blue at the margins. Run the clock back and watch
-   the young ones disappear into the ridge that had not yet made them.
+   matched pair, red at the axis and blue at the margins.
 
-## What this model is not
+## What the Earth screen does not claim
 
-- **Plate interiors are rigid.** Only the boundaries deform, and only in the sense
-  above — a plate changes area but never changes shape internally. The deforming belts
-  along real plate edges, which is where the Andes, the Himalaya and the Basin and
-  Range are, are drawn as though they were not deforming at all.
-- **Velocities are today's velocities.** Extrapolating them is reasonable over a few
-  million years, a sketch at ±50 Myr (the ends of the slider), and wrong beyond that:
-  ridges and subduction zones are born and die, and plates that existed 50 Myr ago —
-  the Farallon plate, for one — are missing entirely because the model has no record of
-  them. The range is capped at ±50 Myr for that reason.
-- **The microplates are the first thing to stop meaning anything.** PB2002 resolves
-  plates a couple of degrees across whose poles sit almost on top of them, so they
-  spin: ten of the fifty-two turn through more than half a revolution over 50 Myr, and
-  Manus through seven full turns. Nothing like that happened — such plates are
-  transient features that do not survive tens of millions of years — and because a
-  boundary is shared, a spinning microplate drags its larger neighbour's edge with it.
-  That is why the south-west Pacific and the Galápagos region look scribbled at the
-  ends of the slider while Africa, the Americas, Eurasia, Australia, Antarctica and
-  the Pacific stay clean. The sixteen labelled plates hold their area to within a
-  factor of four; the microplates do not, and no rule about how boundaries move can
-  rescue an Euler pole extrapolated that far.
-- **Earthquakes and volcanoes are present-day observations.** They ride their plate
-  when the clock runs, so the picture stays coherent, but a 1994 earthquake did not
-  happen 20 Myr ago somewhere else.
-- **The relief raster is present-day.** It is hidden as soon as the reconstruction
-  moves off the present day, because sea floor that has not been created yet cannot be
-  shown.
-- **Isochrons are carried rigidly, not un-made.** Hiding the ones younger than the
-  reconstruction is right, but the ones that remain are only *rotated* back with their
-  plates: the ocean between them should also be closing up, and here it is not, because
-  the model has no way to un-make crust. So running to 50 Myr ago narrows the Atlantic
-  isochron fan by rather less than it should. The 10 Ma pair walking together onto the
-  ridge is the honest part of that picture; the 160 Ma pair barely moving is not.
-- **Hotspots do not move.** That is deliberate, and it is the physics: a plume is
-  anchored in the deep mantle while the plate slides over it, which is why the Hawaiian
-  chain gets older to the north-west.
-
-Most of these are limits of *extrapolating today's velocities*, not limits of plate
-tectonics. The Deep Time screen replaces that extrapolation with a published
-reconstruction and is bound by a different set of limits — see below.
-
-## The Deep Time screen
-
-The Earth screen answers "where were the plates?" by spinning today's velocities
-backwards. This screen answers it by replaying a model that was fitted to the
-geological record: **Müller et al. (2019)**, *A Global Plate Model Including
-Lithospheric Deformation Along Major Rifts and Orogens Since the Triassic*, Tectonics
-38(6), 1884–1907, [doi:10.1029/2018TC005462](https://doi.org/10.1029/2018TC005462),
-distributed by EarthByte under CC BY 4.0. It covers 0–250 Ma, which reaches Pangaea.
-
-The model is resolved at build time with pyGPlates (`npm run build-data plate-history`)
-into 51 instants, one every 5 Myr. Nothing about GPlates ships in the sim: the output is
-two committed modules, like every other dataset here.
-
-### Why the data comes in two different shapes
-
-This is the one thing worth understanding about the screen, because it is visible on
-it.
-
-A **coastline** is a static feature. It has present-day geometry, and it was cookie-cut
-by plate ID, so reconstructing it is one rigid rotation of that geometry. It therefore
-needs no per-instant storage at all — a table of finite rotations per plate ID is
-enough, and the runtime interpolates between samples, so **the continents glide**.
-
-A **plate polygon** is not a static feature. It has no present-day geometry to rotate:
-it is *resolved* at each instant from whichever moving boundary features bounded it
-then. Plates are also born and destroyed — 52 today, 17 at 180 Ma, 11 at 250 Ma, as the
-ocean floor that carried the rest had not been made yet. That genuinely has to be baked
-per instant, so **the plates and boundaries step**, 5 Myr at a time.
-
-The rotations are interpolated as rotations — quaternion slerp, taking the short way
-round — and not by blending pole latitude, pole longitude and angle, which gives
-visibly wrong paths worst exactly where a plate is moving fastest.
-
-### What this screen does not claim
-
-- **The stepping is real, and it is 5 Myr.** A ridge appears between one instant and
-  the next rather than growing. Making it finer is a straight trade against the size of
-  the generated module, which is already the largest thing the sim ships.
-- **Only the reconstruction is drawn.** No earthquakes, volcanoes or relief: those are
-  present-day observations and mean nothing at 200 Ma. The Earth screen is where they
-  belong.
-- **The plate mosaic has holes, and they are honest.** The rigid plates do not tile the
-  globe; the gaps are the *deforming belts* — orogens and rifts where the model
-  explicitly does not treat the lithosphere as rigid. They are a separate layer, off by
-  default, and switching them on fills the gaps in. This is precisely the thing the
-  Earth screen says it cannot show.
-- **The past only.** No published reconstruction runs forwards, so the slider stops at
-  the present day. Running plate motion into the future is the Earth screen's job, and
-  it is honest about how far.
-- **Deep time is less certain than recent time.** Rotations before about 200 Ma rest on
-  palaeomagnetism and geology rather than on seafloor magnetic anomalies, because the
-  ocean floor that recorded them has been subducted. The reconstruction is a published
-  best estimate, not a measurement.
+- **The map shows present-day geometry.** It does not reconstruct past continents or
+  predict future plate positions. Geological evolution is illustrated schematically
+  on the Plate Motion screen.
+- **Velocities describe rigid plates.** PB2002's Euler poles give one rigid rotation
+  per plate; the arrows do not resolve deformation within mountain belts and rifts.
+- **Earthquakes and volcanoes are observational catalogues.** Earthquake epicentres
+  cover events since 1990, and volcanoes are Holocene sites. They are shown at their
+  recorded coordinates, rather than simulated as active events.
+- **Relief and seafloor ages are present-day datasets.** Crustal ages record when the
+  ocean floor formed; the screen does not recreate the oceans at those ages.
+- **Hotspots are selected reference locations.** The hand-maintained list is not a
+  complete model of mantle plumes or their movement.
 
 ## The Crust screen
 

@@ -13,11 +13,9 @@ import { Shape } from "scenerystack/kite";
 import { CanvasNode, Node, Path, Rectangle } from "scenerystack/scenery";
 import { ScreenIcon } from "scenerystack/sim";
 import PlateTectonicsColors from "../PlateTectonicsColors.js";
-import { DeepTimeReconstruction, HISTORY_OLDEST_MA } from "./DeepTimeReconstruction.js";
 import type { BoundaryType } from "./data/dataTypes.js";
 import { BOUNDARY_SEGMENTS } from "./data/generated/boundaryData.js";
 import { LAND_RINGS } from "./data/generated/landData.js";
-import { HISTORY_COASTLINES } from "./data/generated/plateHistoryData.js";
 
 const W = 548;
 const H = 373;
@@ -279,54 +277,4 @@ export function createPlateMotionIcon(): ScreenIcon {
   ];
 
   return iconFrom(new Node({ children }));
-}
-
-/**
- * Present-day continents reconstructed to the oldest instant the model covers, drawn
- * from the same coastlines the Deep Time screen carries.
- *
- * Pangaea is the picture: at 250 Ma every continent has gathered into one mass, which
- * is unmistakable at icon size and is the thing the screen exists to show. Painted
- * through {@link DeepTimeReconstruction} rather than baked as a separate outline, so
- * the icon can never drift out of step with the data.
- */
-class PangaeaIconNode extends CanvasNode {
-  private readonly reconstruction = new DeepTimeReconstruction();
-
-  public constructor() {
-    super({ canvasBounds: new Bounds2(0, 0, W, H) });
-
-    Multilink.multilinkAny([PlateTectonicsColors.oceanColorProperty, PlateTectonicsColors.landColorProperty], () =>
-      this.invalidatePaint(),
-    );
-  }
-
-  public override paintCanvas(context: CanvasRenderingContext2D): void {
-    this.reconstruction.setTime(HISTORY_OLDEST_MA);
-
-    context.fillStyle = PlateTectonicsColors.oceanColorProperty.value.toCSS();
-    context.fillRect(0, 0, W, H);
-
-    context.fillStyle = PlateTectonicsColors.landColorProperty.value.toCSS();
-    context.strokeStyle = PlateTectonicsColors.coastlineColorProperty.value.toCSS();
-    context.lineWidth = ICON_COASTLINE_LINE_WIDTH;
-
-    // Reconstructed into a scratch array first, because `appendFeature` traces
-    // present-day coordinates and the whole point here is that these are not.
-    for (const piece of HISTORY_COASTLINES) {
-      const moved: number[] = [];
-      for (let i = 0; i < piece.coords.length; i += 2) {
-        this.reconstruction.transform(piece.coords[i] as number, piece.coords[i + 1] as number, piece.rotationSlot);
-        moved.push(this.reconstruction.lon, this.reconstruction.lat);
-      }
-      context.beginPath();
-      appendFeature(context, moved, "fill");
-      context.fill();
-      context.stroke();
-    }
-  }
-}
-
-export function createDeepTimeIcon(): ScreenIcon {
-  return iconFrom(new PangaeaIconNode());
 }

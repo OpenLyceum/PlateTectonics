@@ -147,41 +147,6 @@ export const LITHOSPHERE_THICKNESS_KM = 100;
 /** Base of the asthenosphere, km. */
 export const ASTHENOSPHERE_BASE_KM = 350;
 
-// ── Geological time ───────────────────────────────────────────────────────────
-
-/**
- * How far the reconstruction may be run in each direction, in millions of years.
- * Present-day plate velocities are only a good guide over a few tens of millions
- * of years, so the range is deliberately modest.
- */
-export const TIME_RANGE_MYR = 50;
-
-/** Million years of plate motion per second of wall-clock time at normal speed. */
-export const MYR_PER_SECOND = 1;
-
-/** Multipliers applied to {@link MYR_PER_SECOND} at the slow and fast settings. */
-export const SLOW_SPEED_MULTIPLIER = 0.25;
-export const FAST_SPEED_MULTIPLIER = 4;
-
-/** One press of the step button, in millions of years. */
-export const TIME_STEP_MYR = 0.5;
-
-/**
- * Reconstruction times within this tolerance of the present count as "now", so the
- * present-day relief raster stays visible.
- */
-export const PRESENT_DAY_TOLERANCE_MYR = 0.05;
-
-/**
- * The Deep Time screen's clock, which covers 250 Myr rather than 50 and so has to run
- * a great deal faster to be watchable. Ten million years per second walks the whole
- * reconstruction in about twenty-five seconds; the step button moves one snapshot's
- * worth (see `HISTORY_STEP_MYR`), because a smaller step would leave the plates and
- * boundaries on the same snapshot and look like nothing had happened.
- */
-export const DEEP_TIME_MYR_PER_SECOND = 10;
-export const DEEP_TIME_STEP_MYR = 5;
-
 // ── Isostasy and the crust (Crust screen) ─────────────────────────────────────
 // Lengths here are in metres rather than km, because the Crust screen works at the
 // scale of a single crustal column and its slider spans 4–70 km.
@@ -535,14 +500,6 @@ PlateTectonicsNamespace.register("PlateTectonicsConstants", {
   MAX_SEAFLOOR_AGE_MA,
   LITHOSPHERE_THICKNESS_KM,
   ASTHENOSPHERE_BASE_KM,
-  TIME_RANGE_MYR,
-  MYR_PER_SECOND,
-  SLOW_SPEED_MULTIPLIER,
-  FAST_SPEED_MULTIPLIER,
-  TIME_STEP_MYR,
-  PRESENT_DAY_TOLERANCE_MYR,
-  DEEP_TIME_MYR_PER_SECOND,
-  DEEP_TIME_STEP_MYR,
   MANTLE_DENSITY_KG_M3,
   SEAWATER_DENSITY_KG_M3,
   AIRY_REFERENCE_OFFSET_M,

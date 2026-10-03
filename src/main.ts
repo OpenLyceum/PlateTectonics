@@ -22,7 +22,6 @@ import "./brand.js";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { CrustScreen } from "./crust/CrustScreen.js";
-import { DeepTimeScreen } from "./deep-time/DeepTimeScreen.js";
 import { EarthScreen } from "./earth/EarthScreen.js";
 import { StringManager } from "./i18n/StringManager.js";
 import PlateTectonicsColors from "./PlateTectonicsColors.js";
@@ -53,12 +52,6 @@ onReadyToLaunch(() => {
       // The screen name Property updates automatically when the locale changes
       name: stringManager.getScreenNames().plateMotionStringProperty,
       tandem: Tandem.ROOT.createTandem("plateMotionScreen"),
-      backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
-    }),
-    new DeepTimeScreen({
-      // The screen name Property updates automatically when the locale changes
-      name: stringManager.getScreenNames().deepTimeStringProperty,
-      tandem: Tandem.ROOT.createTandem("deepTimeScreen"),
       backgroundColorProperty: PlateTectonicsColors.backgroundColorProperty,
     }),
   ];
@@ -95,8 +88,7 @@ onReadyToLaunch(() => {
       thanks:
         "Plate model: Bird (2003), doi:10.1029/2001GC000252, via fraxen/tectonicplates (ODC-BY 1.0). " +
         "Coastlines: Natural Earth. Earthquakes: USGS ANSS. Volcanoes: NOAA NCEI / Smithsonian GVP. " +
-        "Elevation and bathymetry: NOAA NCEI. " +
-        "Deep-time reconstruction: Müller et al. (2019), doi:10.1029/2018TC005462, EarthByte (CC BY 4.0).",
+        "Elevation and bathymetry: NOAA NCEI.",
     },
   });
 

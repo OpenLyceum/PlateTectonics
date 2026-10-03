@@ -10,8 +10,7 @@
  * pole — so the Nazca plate's arrow is long and points east while the Antarctic
  * plate's is a stub, which is exactly the point.
  *
- * Both label and arrow ride the plate: when the reconstruction clock runs, the
- * anchor point is rotated about the plate's pole like everything else. The node is
+ * Both label and arrow are anchored at present-day coordinates. The node is
  * written against `EarthProjection`, so the same labels and arrows serve the flat map
  * and the globe; on the globe a plate whose label point has turned away from the
  * viewer simply drops out until it comes back round.
@@ -47,7 +46,6 @@ interface PlateMarker {
 
 export class PlateOverlayNode extends Node {
   private readonly projection: EarthProjection;
-  private readonly reconstruction = new PlateReconstruction();
   private readonly markers: PlateMarker[] = [];
 
   public constructor(model: EarthModel, projection: EarthProjection, providedOptions?: PlateOverlayNodeOptions) {
@@ -98,22 +96,16 @@ export class PlateOverlayNode extends Node {
       arrowLayer.visible = visible;
     });
 
-    // The reconstruction clock moves the plates; the projection's camera, if it has
-    // one, moves everything at once.
-    Multilink.multilinkAny([model.timeMillionsOfYearsProperty, ...projection.cameraProperties], () =>
-      this.updatePositions(model.timeMillionsOfYearsProperty.value),
-    );
+    // Camera changes move all present-day labels and arrows together.
+    Multilink.multilinkAny(projection.cameraProperties, () => this.updatePositions());
   }
 
-  /** Moves every label and arrow to where its plate is at `timeMyr`. */
-  private updatePositions(timeMyr: number): void {
-    this.reconstruction.setTime(timeMyr);
-
+  /** Projects every present-day label and arrow through the current camera. */
+  private updatePositions(): void {
     for (const marker of this.markers) {
       const plate = PLATES[marker.plateIndex] as (typeof PLATES)[number];
-      this.reconstruction.transform(plate.labelLon, plate.labelLat, marker.plateIndex);
-      const lon = this.reconstruction.lon;
-      const lat = this.reconstruction.lat;
+      const lon = plate.labelLon;
+      const lat = plate.labelLat;
 
       // On the globe a plate label can be round the back, where there is nowhere
       // honest to draw it.
@@ -130,9 +122,7 @@ export class PlateOverlayNode extends Node {
       marker.label.centerX = x;
       marker.label.centerY = y - 9;
 
-      // Velocity is a property of the plate, not of the epoch: the same rigid
-      // rotation carries the point, so the arrow keeps its length and simply
-      // turns with the plate.
+      // Present-day absolute velocity at the label point.
       const velocity = PlateReconstruction.velocityAt(marker.plateIndex, lon, lat);
       const length = (velocity.speedMmPerYear / REFERENCE_SPEED_MM_PER_YEAR) * VELOCITY_VECTOR_SCALE;
       this.projection.bearing(lon, lat, velocity.azimuthDeg);

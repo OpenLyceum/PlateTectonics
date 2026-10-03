@@ -8,7 +8,7 @@
  * the live `currentDetails` paragraph rather than in the static control-area description:
  * which view is showing and how far it is stretched are things the user changes, and a
  * screen-reader user re-reading the summary should hear the current state — the same
- * reason the depth filter and the geological time are in there.
+ * reason the Earth summary includes the depth filter.
  */
 
 import { DerivedStringProperty, type TReadOnlyProperty } from "scenerystack/axon";

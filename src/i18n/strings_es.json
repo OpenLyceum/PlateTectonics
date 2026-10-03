@@ -3,8 +3,7 @@
   "screens": {
     "earth": "Tierra",
     "crust": "Corteza",
-    "plateMotion": "Movimiento de placas",
-    "deepTime": "Tiempo profundo"
+    "plateMotion": "Movimiento de placas"
   },
   "crust": {
     "myCrust": "Mi corteza",
@@ -79,19 +78,6 @@
     "automatic": "Automático",
     "manual": "Manual"
   },
-  "deepTime": {
-    "title": "Tiempo profundo",
-    "present": "Actualidad",
-    "age": "hace {{value}} millones de años",
-    "layers": "Mostrar",
-    "coastlines": "Continentes",
-    "plates": "Placas",
-    "boundaries": "Límites de placas",
-    "deforming": "Zonas de deformación",
-    "model": "Reconstrucción: Müller et al. (2019)",
-    "rate": "1 segundo = 10 millones de años",
-    "snapshotNote": "Las placas y los límites avanzan cada 5 millones de años"
-  },
   "views": {
     "title": "Vista",
     "flatMap": "Mapa plano",
@@ -115,15 +101,6 @@
     "shallow": "Superficial (< 70 km)",
     "intermediate": "Intermedia (70–300 km)",
     "deep": "Profunda (> 300 km)"
-  },
-  "time": {
-    "title": "Tiempo geológico",
-    "present": "Actualidad",
-    "past": "hace {{value}} millones de años",
-    "future": "dentro de {{value}} millones de años",
-    "rate": "1 segundo = 1 millón de años",
-    "reconstruction": "Posiciones de las placas extrapoladas del movimiento actual",
-    "topographyAtPresent": "El relieve se muestra solo en la actualidad"
   },
   "plateLabels": {
     "speed": "{{value}} mm/año",
@@ -175,10 +152,10 @@
     "earth": {
       "screenSummary": {
         "playArea": "El área de juego muestra las placas tectónicas de la Tierra, dibujadas sobre un globo que puede girarse o sobre un mapa plano. Encima se pueden dibujar capas de datos reales: límites de placas coloreados por tipo, flechas del movimiento de las placas, epicentros de terremotos, volcanes y puntos calientes, el relieve sombreado de la superficie terrestre y del fondo marino, e isócronas del fondo oceánico — líneas de igual edad de la corteza, paralelas a las dorsales y cada vez más antiguas al alejarse de ellas.",
-        "controlArea": "El área de control tiene un interruptor entre el globo y el mapa plano, una casilla para cada capa de datos, un filtro de profundidad de terremotos, controles que hacen avanzar y retroceder el movimiento de las placas en el tiempo geológico, y un botón de Restablecer todo.",
+        "controlArea": "El área de controles tiene un selector entre el globo y el mapa plano, una casilla para cada capa de datos, un filtro de profundidad de terremotos y un botón Restablecer todo.",
         "interactionHint": "Active un par de capas y busque dónde coinciden: terremotos y volcanes alrededor del Pacífico, o dorsales y terremotos superficiales en medio del Atlántico."
       },
-      "currentDetails": "{{view}} {{layers}} {{depths}} {{time}}",
+      "currentDetails": "{{view}} {{layers}} {{depths}}",
       "viewDetails": {
         "global": "Se muestra el mapa plano. Puede moverse hacia el este y el oeste, y ampliarse para observar de cerca una región.",
         "globe": "La Tierra se muestra como un globo, que puede girarse para traer cualquier región al campo de visión."
@@ -190,11 +167,6 @@
         "shallow": "Solo se muestran terremotos superficiales, de menos de 70 kilómetros de profundidad.",
         "intermediate": "Solo se muestran terremotos de profundidad intermedia, entre 70 y 300 kilómetros.",
         "deep": "Solo se muestran terremotos profundos, de más de 300 kilómetros."
-      },
-      "timeDetails": {
-        "present": "Las placas están en sus posiciones actuales.",
-        "past": "Las placas se muestran como estaban hace unos {{value}} millones de años.",
-        "future": "Las placas se muestran como estarían dentro de unos {{value}} millones de años."
       },
       "controls": {
         "viewSwitchHelp": "Dibujar la Tierra como un globo que puede girarse, o como un mapa rectangular plano.",
@@ -213,10 +185,7 @@
         "topography": "Topografía y batimetría",
         "seafloorAge": "Isócronas de edad del fondo oceánico",
         "depthFilter": "Profundidad de los terremotos",
-        "depthFilterHelp": "Muestre terremotos de todas las profundidades, o solo de una banda de profundidad.",
-        "timeSlider": "Tiempo geológico",
-        "timeSliderHelp": "Mueva las placas hacia el pasado o hacia el futuro, en millones de años.",
-        "resetTime": "Volver a la actualidad"
+        "depthFilterHelp": "Muestre terremotos de todas las profundidades, o solo de una banda de profundidad."
       }
     },
     "crust": {
@@ -300,30 +269,6 @@
       },
       "modeAutomatic": "El reloj avanza solo.",
       "modeManual": "El tiempo solo avanza cuando se mueve un tirador de placa."
-    },
-    "deepTime": {
-      "screenSummary": {
-        "playArea": "El área de juego muestra un globo con una reconstrucción publicada de las placas terrestres durante los últimos 250 millones de años. Los continentes se mueven de forma continua, mientras que las placas y sus límites se reconstruyen cada cinco millones de años, porque las placas mismas nacen y desaparecen al abrirse y cerrarse los océanos.",
-        "controlArea": "El área de control tiene una casilla por capa, un deslizador y controles de reproducción que recorren desde la actualidad hasta hace 250 millones de años, y un botón Reiniciar todo.",
-        "interactionHint": "Retroceda el reloj y observe cómo se cierra el Atlántico: hace 250 millones de años todos los continentes forman Pangea."
-      },
-      "currentDetails": "{{time}} {{layers}}",
-      "timeDetails": {
-        "present": "El globo muestra la Tierra tal como es hoy.",
-        "past": "El globo muestra la Tierra tal como era hace unos {{value}} millones de años."
-      },
-      "layersDetails": "Capas mostradas: {{layers}}.",
-      "noLayers": "No se muestra ninguna capa.",
-      "controls": {
-        "globe": "Globo reconstruido",
-        "globeHelp": "Arrastre el globo para girar la Tierra. Con el globo enfocado, las flechas izquierda y derecha mueven la vista al este y al oeste, y las flechas arriba y abajo al norte y al sur.",
-        "timeSlider": "Tiempo geológico",
-        "timeSliderHelp": "Mueva el deslizador para elegir una edad, desde la actualidad hasta hace 250 millones de años.",
-        "coastlines": "Mostrar los continentes, transportados por las placas sobre las que se asientan.",
-        "plates": "Mostrar las placas tectónicas que existían en esa edad.",
-        "boundaries": "Mostrar los límites de placas, coloreados por tipo.",
-        "deforming": "Mostrar las zonas donde el modelo trata la litosfera como deformable en vez de rígida."
-      }
     },
     "blockView": {
       "sectionView": "Vista de la sección",

@@ -3,8 +3,7 @@
   "screens": {
     "earth": "Earth",
     "crust": "Crust",
-    "plateMotion": "Plate Motion",
-    "deepTime": "Deep Time"
+    "plateMotion": "Plate Motion"
   },
   "crust": {
     "myCrust": "My Crust",
@@ -79,19 +78,6 @@
     "automatic": "Automatic",
     "manual": "Manual"
   },
-  "deepTime": {
-    "title": "Deep Time",
-    "present": "Present day",
-    "age": "{{value}} million years ago",
-    "layers": "Show",
-    "coastlines": "Continents",
-    "plates": "Plates",
-    "boundaries": "Plate boundaries",
-    "deforming": "Deforming belts",
-    "model": "Reconstruction: Müller et al. (2019)",
-    "rate": "1 second = 10 million years",
-    "snapshotNote": "Plates and boundaries step every 5 million years"
-  },
   "views": {
     "title": "View",
     "flatMap": "Flat map",
@@ -115,15 +101,6 @@
     "shallow": "Shallow (< 70 km)",
     "intermediate": "Intermediate (70–300 km)",
     "deep": "Deep (> 300 km)"
-  },
-  "time": {
-    "title": "Geological time",
-    "present": "Present day",
-    "past": "{{value}} million years ago",
-    "future": "{{value}} million years from now",
-    "rate": "1 second = 1 million years",
-    "reconstruction": "Plate positions extrapolated from today's motion",
-    "topographyAtPresent": "Relief shown at the present day only"
   },
   "plateLabels": {
     "speed": "{{value}} mm/yr",
@@ -175,10 +152,10 @@
     "earth": {
       "screenSummary": {
         "playArea": "The play area shows the Earth's tectonic plates, drawn on a globe that can be turned or on a flat map. Layers of real data can be drawn on top of it: plate boundaries coloured by type, plate motion arrows, earthquake epicentres, volcanoes and hotspots, shaded relief of the land surface and sea floor, and isochrons of the ocean floor — lines of equal crustal age, which run parallel to the spreading ridges and get older away from them.",
-        "controlArea": "The control area has a switch between the globe and the flat map, a checkbox for each data layer, an earthquake depth filter, controls that run plate motion forwards and backwards through geological time, and a Reset All button.",
+        "controlArea": "The control area has a switch between the globe and the flat map, a checkbox for each data layer, an earthquake depth filter, and a Reset All button.",
         "interactionHint": "Switch on a pair of layers and look for where they line up — earthquakes and volcanoes around the Pacific, or ridges and shallow earthquakes down the middle of the Atlantic."
       },
-      "currentDetails": "{{view}} {{layers}} {{depths}} {{time}}",
+      "currentDetails": "{{view}} {{layers}} {{depths}}",
       "viewDetails": {
         "global": "The flat map is showing. It can be moved east and west, and zoomed in to look at one region closely.",
         "globe": "The Earth is showing as a globe, which can be turned to bring any part of it into view."
@@ -190,11 +167,6 @@
         "shallow": "Only shallow earthquakes, less than 70 kilometres deep, are shown.",
         "intermediate": "Only intermediate-depth earthquakes, 70 to 300 kilometres deep, are shown.",
         "deep": "Only deep earthquakes, more than 300 kilometres deep, are shown."
-      },
-      "timeDetails": {
-        "present": "Plates are in their present-day positions.",
-        "past": "Plates are shown as they were about {{value}} million years ago.",
-        "future": "Plates are shown as they would be about {{value}} million years from now."
       },
       "controls": {
         "viewSwitchHelp": "Draw the Earth as a globe that can be turned, or as a flat rectangular map.",
@@ -213,10 +185,7 @@
         "topography": "Topography and bathymetry",
         "seafloorAge": "Seafloor age isochrons",
         "depthFilter": "Earthquake depth",
-        "depthFilterHelp": "Show earthquakes of every depth, or only one depth band.",
-        "timeSlider": "Geological time",
-        "timeSliderHelp": "Move plates back into the past or forward into the future, in millions of years.",
-        "resetTime": "Return to the present day"
+        "depthFilterHelp": "Show earthquakes of every depth, or only one depth band."
       }
     },
     "crust": {
@@ -300,30 +269,6 @@
       },
       "modeAutomatic": "The clock runs on its own.",
       "modeManual": "Time advances only while a plate handle is moved."
-    },
-    "deepTime": {
-      "screenSummary": {
-        "playArea": "The play area shows a globe carrying a published reconstruction of the Earth's plates over the last 250 million years. The continents move continuously as the clock runs, while the plates and the boundaries between them are rebuilt every five million years, because plates themselves are born and destroyed as oceans open and close.",
-        "controlArea": "The control area has a checkbox for each layer, a slider and play controls that run the reconstruction from the present day back to 250 million years ago, and a Reset All button.",
-        "interactionHint": "Run the clock back and watch the Atlantic close: by 250 million years ago every continent has gathered into Pangaea."
-      },
-      "currentDetails": "{{time}} {{layers}}",
-      "timeDetails": {
-        "present": "The globe shows the Earth as it is today.",
-        "past": "The globe shows the Earth as it was about {{value}} million years ago."
-      },
-      "layersDetails": "Layers shown: {{layers}}.",
-      "noLayers": "No layers are shown.",
-      "controls": {
-        "globe": "Reconstructed globe",
-        "globeHelp": "Drag the globe to turn the Earth. With the globe focused, the left and right arrow keys move the view east and west, and the up and down arrow keys move it north and south.",
-        "timeSlider": "Geological time",
-        "timeSliderHelp": "Move the slider to choose an age, from the present day back to 250 million years ago.",
-        "coastlines": "Show the continents, carried by the plates they sit on.",
-        "plates": "Show the tectonic plates that existed at this age.",
-        "boundaries": "Show plate boundaries, coloured by type.",
-        "deforming": "Show the belts where the model treats the lithosphere as deforming rather than rigid."
-      }
     },
     "blockView": {
       "sectionView": "Section view",
