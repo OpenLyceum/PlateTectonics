@@ -65,10 +65,15 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
       (tMyr: number, pattern: string) => pattern.replace("{{value}}", toFixed(tMyr, 0)),
     );
 
+    const canPlay = new DerivedProperty(
+      [model.animationStartedProperty, model.isFinishedProperty],
+      (started: boolean, finished: boolean) => started && !finished,
+    );
+
     const playPauseButton = new PlayPauseButton(model.timer.isPlayingProperty, {
       ...FLAT_BUTTON_APPEARANCE_OPTIONS,
       radius: 18,
-      enabledProperty: running,
+      enabledProperty: canPlay,
     });
 
     // Stepping only makes sense while paused; while playing it would fight the clock.
@@ -183,6 +188,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
 
     this.disposeEmitter.addListener(() => {
       canStep.dispose();
+      canPlay.dispose();
       elapsed.dispose();
       automatic.dispose();
       running.dispose();
