@@ -291,7 +291,7 @@ describe("boundaries ride the right motion", () => {
       expect(match, `unrecognised boundary name ${name}`).not.toBeNull();
       const [, left, separator, right] = match as [string, string, string, string];
       const subducting = separator === "\\" ? left : separator === "/" ? right : null;
-      return `${[left, right].sort().join(":")} ${type} under ${subducting ?? "neither"}`;
+      return `${[left, right].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).join(":")} ${type} under ${subducting ?? "neither"}`;
     };
 
     const framesByMeaning = new Map<string, Set<number>>();
