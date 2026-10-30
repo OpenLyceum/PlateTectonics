@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 /**
  * scripts/build-data.ts
  *
@@ -23,10 +23,10 @@
  *  - EarthByte / Seton et al. (2020) present-day seafloor age grid (CC BY 4.0).
  */
 
-import { type ScalarGrid, traceContours } from "./data/contour.js";
-import { fetchElevationGrid } from "./data/dem.js";
-import { numberArray, round, wrap, writeGeneratedModule } from "./data/emit.js";
-import { fetchBinary, fetchJson, fetchText } from "./data/fetchCache.js";
+import { type ScalarGrid, traceContours } from "./data/contour.ts";
+import { fetchElevationGrid } from "./data/dem.ts";
+import { numberArray, round, wrap, writeGeneratedModule } from "./data/emit.ts";
+import { fetchBinary, fetchJson, fetchText } from "./data/fetchCache.ts";
 import {
   cross,
   dot,
@@ -39,8 +39,8 @@ import {
   simplify,
   toLonLat,
   toUnitVector,
-} from "./data/geo.js";
-import { readNetCdf } from "./data/netcdf.js";
+} from "./data/geo.ts";
+import { readNetCdf } from "./data/netcdf.ts";
 
 const GENERATED_DIR = "src/common/data/generated";
 

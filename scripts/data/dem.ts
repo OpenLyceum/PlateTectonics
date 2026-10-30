@@ -9,7 +9,7 @@
  * TIFF reader (below) is enough — no image library is involved.
  */
 
-import { fetchBinary } from "./fetchCache.js";
+import { fetchBinary } from "./fetchCache.ts";
 
 const IMAGE_SERVICE =
   "https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/exportImage";
