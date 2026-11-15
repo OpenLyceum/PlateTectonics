@@ -7,14 +7,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import {
-  combinedFill,
-  densityFill,
-  densityRatio,
-  materialFill,
-  temperatureFill,
-  temperatureRatio,
-} from "../src/common/view/EarthMaterial.js";
+import { densityRatio, materialFill, temperatureRatio } from "../src/common/view/EarthMaterial.js";
 import {
   DENSITY_SCALE_RANGE,
   EARTH_CENTRE_DENSITY_KG_M3,
@@ -79,45 +72,38 @@ describe("temperatureRatio", () => {
   });
 });
 
-describe("densityFill", () => {
-  it("paints denser rock darker", () => {
-    expect(luminance(densityFill(3300))).toBeLessThan(luminance(densityFill(2600)));
+describe("materialFill", () => {
+  it("paints denser rock darker in density mode", () => {
+    expect(luminance(materialFill("density", 3300, 1000))).toBeLessThan(luminance(materialFill("density", 2600, 1000)));
   });
-});
 
-describe("temperatureFill", () => {
-  it("paints hotter rock redder", () => {
-    const hot = temperatureFill(SURFACE_TEMPERATURE_K + 4000);
-    const cold = temperatureFill(SURFACE_TEMPERATURE_K + 100);
+  it("paints hotter rock redder in temperature mode", () => {
+    const hot = materialFill("temperature", 3000, SURFACE_TEMPERATURE_K + 4000);
+    const cold = materialFill("temperature", 3000, SURFACE_TEMPERATURE_K + 100);
     expect(hot.r - hot.b).toBeGreaterThan(cold.r - cold.b);
   });
-});
 
-describe("combinedFill", () => {
-  it("darkens the temperature colour by density", () => {
-    const light = combinedFill(2600, 1500);
-    const dense = combinedFill(3400, 1500);
+  it("darkens the temperature colour by density in combined mode", () => {
+    const light = materialFill("both", 2600, 1500);
+    const dense = materialFill("both", 3400, 1500);
     expect(luminance(dense)).toBeLessThan(luminance(light));
   });
 
-  it("keeps temperature readable at fixed density", () => {
-    const hot = combinedFill(3000, SURFACE_TEMPERATURE_K + 4000);
-    const cold = combinedFill(3000, SURFACE_TEMPERATURE_K + 100);
+  it("keeps temperature readable at fixed density in combined mode", () => {
+    const hot = materialFill("both", 3000, SURFACE_TEMPERATURE_K + 4000);
+    const cold = materialFill("both", 3000, SURFACE_TEMPERATURE_K + 100);
     expect(hot.r - hot.b).toBeGreaterThan(cold.r - cold.b);
   });
 
   it("makes a cold dense slab the darkest thing on screen", () => {
     // The picture the mode exists for: slab against mantle.
-    const slab = combinedFill(3400, SURFACE_TEMPERATURE_K + 400);
-    const mantle = combinedFill(3300, SURFACE_TEMPERATURE_K + 1400);
+    const slab = materialFill("both", 3400, SURFACE_TEMPERATURE_K + 400);
+    const mantle = materialFill("both", 3300, SURFACE_TEMPERATURE_K + 1400);
     expect(luminance(slab)).toBeLessThan(luminance(mantle));
   });
-});
 
-describe("materialFill", () => {
   it("dispatches to the mode it is given", () => {
-    expect(materialFill("density", 3000, 1000).toCSS()).toBe(densityFill(3000).toCSS());
-    expect(materialFill("temperature", 3000, 1000).toCSS()).toBe(temperatureFill(1000).toCSS());
-    expect(materialFill("both", 3000, 1000).toCSS()).toBe(combinedFill(3000, 1000).toCSS());
+    expect(materialFill("density", 3000, 1000).toCSS()).not.toBe(materialFill("temperature", 3000, 1000).toCSS());
+    expect(materialFill("both", 3000, 1000).toCSS()).not.toBe(materialFill("density", 3000, 1000).toCSS());
   });
 });
