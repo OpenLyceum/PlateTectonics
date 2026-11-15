@@ -126,12 +126,6 @@ export const INTERMEDIATE_DEPTH_LIMIT_KM = 300;
 /** The deepest earthquakes ever recorded are just over 700 km down. */
 export const MAX_EARTHQUAKE_DEPTH_KM = 700;
 
-/** Typical thickness of continental crust, km. */
-export const CONTINENTAL_CRUST_THICKNESS_KM = 35;
-
-/** Typical thickness of oceanic crust, km. */
-export const OCEANIC_CRUST_THICKNESS_KM = 7;
-
 /**
  * Oldest ocean floor left on Earth, in millions of years, and the top of the
  * isochron colour ramp. Older crust than this has been subducted — the sea floor is
@@ -143,9 +137,6 @@ export const MAX_SEAFLOOR_AGE_MA = 180;
 
 /** Typical thickness of the rigid lithosphere (crust + lithospheric mantle), km. */
 export const LITHOSPHERE_THICKNESS_KM = 100;
-
-/** Base of the asthenosphere, km. */
-export const ASTHENOSPHERE_BASE_KM = 350;
 
 // ── Isostasy and the crust (Crust screen) ─────────────────────────────────────
 // Lengths here are in metres rather than km, because the Crust screen works at the
@@ -293,10 +284,6 @@ export const TEMPERATURE_SCALE_MAX_K = SURFACE_TEMPERATURE_K + 6400;
 export const TEMPERATURE_RAMP_GAMMA = 0.4;
 export const TEMPERATURE_RAMP_CLAMP_RANGE = new Range(0.08, 0.95);
 
-/** Full-scale readings of the draggable probe. */
-export const PROBE_MAX_TEMPERATURE_C = 2000;
-export const PROBE_MAX_DENSITY_KG_M3 = 3500;
-
 /** Density the probe reports when it is on the ground rather than inside a layer, kg/m³. */
 export const TERRAIN_DENSITY_KG_M3 = 2720;
 
@@ -359,16 +346,8 @@ export const SUBDUCTION_ARC_ANGLE_FRACTIONS = [0.25, 0.5, 0.25] as const;
 export const SUBDUCTION_TOTAL_ANGLE_YOUNG_RAD = (Math.PI / 4) * 0.8;
 export const SUBDUCTION_TOTAL_ANGLE_OLD_RAD = (Math.PI / 4) * 1.2;
 
-/** Depth below which the slab loses its identity into the mantle, m, and the rate it does so. */
-export const SLAB_BLEND_DEPTH_M = 150000;
-export const SLAB_BLEND_RATE_PER_MYR = 0.08;
-
-/** The depth window in which the slab dehydrates and melt is generated, m. */
+/** The depth at which the slab dehydrates and melt is generated, m. */
 export const MELT_TOP_DEPTH_M = 100000;
-export const MELT_BOTTOM_DEPTH_M = 150000;
-
-/** Speed magma rises through the overriding plate, m per million years. */
-export const MELT_SPEED_M_PER_MYR = 10000;
 
 /**
  * When the magma chamber under a volcanic arc starts and finishes filling, Myr.
@@ -419,14 +398,6 @@ export const NEW_CRUST_LABEL_DELAY_MYR = 8.44;
 
 /** Elevations between which a continental collision roughens into individual peaks, m. */
 export const COLLISION_ELEVATION_RANGE_M = new Range(6000, 13000);
-
-/** Top and bottom of the simplified mantle drawn on this screen, m. */
-export const SIMPLE_MANTLE_TOP_M = -10000;
-export const SIMPLE_MANTLE_BOTTOM_M = -600000;
-
-/** Magma is hot and buoyant: it rises because of this density contrast with the mantle. */
-export const MAGMA_DENSITY_KG_M3 = 2000;
-export const MAGMA_TEMPERATURE_K = SURFACE_TEMPERATURE_K + 1300;
 
 /** Half-width of the modelled region, m. Crust is created and destroyed just outside it. */
 export const PLATE_X_LIMIT_M = 700000;
@@ -495,11 +466,8 @@ PlateTectonicsNamespace.register("PlateTectonicsConstants", {
   SHALLOW_DEPTH_LIMIT_KM,
   INTERMEDIATE_DEPTH_LIMIT_KM,
   MAX_EARTHQUAKE_DEPTH_KM,
-  CONTINENTAL_CRUST_THICKNESS_KM,
-  OCEANIC_CRUST_THICKNESS_KM,
   MAX_SEAFLOOR_AGE_MA,
   LITHOSPHERE_THICKNESS_KM,
-  ASTHENOSPHERE_BASE_KM,
   MANTLE_DENSITY_KG_M3,
   SEAWATER_DENSITY_KG_M3,
   AIRY_REFERENCE_OFFSET_M,
@@ -536,8 +504,6 @@ PlateTectonicsNamespace.register("PlateTectonicsConstants", {
   TEMPERATURE_SCALE_MAX_K,
   TEMPERATURE_RAMP_GAMMA,
   TEMPERATURE_RAMP_CLAMP_RANGE,
-  PROBE_MAX_TEMPERATURE_C,
-  PROBE_MAX_DENSITY_KG_M3,
   TERRAIN_DENSITY_KG_M3,
   CONTINENTAL_PLATE_DENSITY_KG_M3,
   CONTINENTAL_PLATE_TOP_M,
@@ -558,11 +524,7 @@ PlateTectonicsNamespace.register("PlateTectonicsConstants", {
   SUBDUCTION_ARC_ANGLE_FRACTIONS,
   SUBDUCTION_TOTAL_ANGLE_YOUNG_RAD,
   SUBDUCTION_TOTAL_ANGLE_OLD_RAD,
-  SLAB_BLEND_DEPTH_M,
-  SLAB_BLEND_RATE_PER_MYR,
   MELT_TOP_DEPTH_M,
-  MELT_BOTTOM_DEPTH_M,
-  MELT_SPEED_M_PER_MYR,
   MAGMA_FILL_START_OLD_MYR,
   MAGMA_FILL_END_OLD_MYR,
   MAGMA_FILL_START_YOUNG_MYR,
@@ -574,10 +536,6 @@ PlateTectonicsNamespace.register("PlateTectonicsConstants", {
   RIDGE_TOP_M,
   NEW_CRUST_LABEL_DELAY_MYR,
   COLLISION_ELEVATION_RANGE_M,
-  SIMPLE_MANTLE_TOP_M,
-  SIMPLE_MANTLE_BOTTOM_M,
-  MAGMA_DENSITY_KG_M3,
-  MAGMA_TEMPERATURE_K,
   PLATE_X_LIMIT_M,
   GEOTHERM_LINEAR_K_PER_M,
   GEOTHERM_QUADRATIC_K_PER_M2,

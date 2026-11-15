@@ -44,9 +44,6 @@ import { type RelaxationState, settledAt, stepRelaxation } from "./IsostaticRela
 /** How far down the view reaches. */
 export type CrustZoom = "crust" | "lithosphere" | "earth";
 
-/** The zoom levels, in the order they appear in the radio-button group. */
-export const CRUST_ZOOMS: readonly CrustZoom[] = ["crust", "lithosphere", "earth"];
-
 /** Ratios run 0 to 1; both sliders start in the middle. */
 const RATIO_RANGE = new Range(0, 1);
 const RATIO_DEFAULT = 0.5;

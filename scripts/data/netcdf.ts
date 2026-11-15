@@ -24,7 +24,7 @@ const NC_ATTRIBUTE = 0x0c;
 const TYPE_SIZES: Record<number, number> = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 4, 6: 8 };
 
 /** One variable, with its values already decoded to doubles. */
-export interface NetCdfVariable {
+interface NetCdfVariable {
   /** Dimension names, slowest-varying first. */
   readonly dimensions: readonly string[];
   /** Length of each dimension, in the same order. */

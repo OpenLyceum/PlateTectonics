@@ -16,6 +16,3 @@
 
 /** How the cross-section paints rock. */
 export type ColorMode = "density" | "temperature" | "both";
-
-/** The modes in the order they appear in the radio-button group. */
-export const COLOR_MODES: readonly ColorMode[] = ["density", "temperature", "both"];

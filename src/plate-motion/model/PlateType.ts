@@ -88,11 +88,6 @@ export function crustThickness(type: PlateType): number {
   return crustTopM - crustBaseM;
 }
 
-/** Thickness of the whole rigid plate — crust plus lithospheric mantle, m. */
-export function lithosphereThickness(type: PlateType): number {
-  return crustThickness(type) + PROPERTIES[type].mantleLithosphereM;
-}
-
 /** Elevation of the base of the lithosphere, m. */
 export function lithosphereBaseM(type: PlateType): number {
   return PROPERTIES[type].crustBaseM - PROPERTIES[type].mantleLithosphereM;

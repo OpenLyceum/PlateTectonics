@@ -252,7 +252,7 @@ src/
             QuadRenderer.ts            depth-sorted, flat-shaded faces
             EarthBlockNode.ts          the 3-D block both screens share
             TerrainColors.ts           the elevation ramp on the block's surface
-            CanvasArrows.ts            arrow-heads and flow lines
+            CanvasArrows.ts            arrow-heads
   crust/          the Crust screen
   plate-motion/   the Plate Motion screen
   earth/ the globe and the flat map

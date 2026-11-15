@@ -55,7 +55,7 @@ Forked from [SceneryStackTemplate](https://github.com/OpenLyceum/SceneryStackTem
 | `src/common/view/ColorModeControlPanel.ts` | The shared "View" panel |
 | `src/common/view/MaterialLegendNode.ts` | The ramp legend |
 | `src/common/view/EarthProbeNode.ts` | The draggable temperature/density probe |
-| `src/common/view/CanvasArrows.ts` | Arrow-heads and flow lines, shared by every painter |
+| `src/common/view/CanvasArrows.ts` | Arrow-heads, shared by every painter |
 | `src/common/view/SceneCamera.ts` | The 3-D block's perspective projection, and the ray back out |
 | `src/common/view/QuadRenderer.ts` | Face collection, depth sort, flat shading — the depth buffer's stand-in |
 | `src/common/view/EarthBlockNode.ts` | **The 3-D block**: terrain, end walls, water, front face, camera |

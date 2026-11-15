@@ -60,7 +60,7 @@ export type BoundaryLineNodeOptions = SelfOptions & NodeOptions;
  * sample rather than at the crossing would make the line's end jump from one sample to
  * the next as the window moved, which on the overriding plate is every frame.
  */
-export function clipPolylineToX(
+function clipPolylineToX(
   points: readonly Vector2[],
   minXM: number,
   maxXM: number,

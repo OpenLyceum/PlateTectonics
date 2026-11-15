@@ -70,7 +70,7 @@ export type PlateOutline = {
 };
 
 /** A volcano on the surface. */
-export type Volcano = {
+type Volcano = {
   readonly xM: number;
   readonly baseM: number;
   readonly heightM: number;
@@ -84,7 +84,7 @@ export type Volcano = {
  * step-while-paused stop being exact. Blobs at fixed phases repeat instead of being
  * individually random, which at this size is not a difference anyone can see.
  */
-export type MagmaBlob = {
+type MagmaBlob = {
   readonly xM: number;
   readonly elevationM: number;
   readonly radiusM: number;
@@ -418,7 +418,7 @@ const ARC_WINDOW_M = 6 * ARC_X_DECAY_M;
 
 /** Samples across the arc's cross-section, and how wide that section reaches. */
 const ARC_SECTION_SAMPLES = 24;
-export const ARC_SECTION_HALF_WIDTH_M = 3 * ARC_X_DECAY_M;
+const ARC_SECTION_HALF_WIDTH_M = 3 * ARC_X_DECAY_M;
 
 /**
  * The shape of a cut through an arc volcano, in its own units.

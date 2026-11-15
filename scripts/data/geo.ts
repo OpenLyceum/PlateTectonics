@@ -8,7 +8,7 @@
  */
 
 /** Mean Earth radius (km). */
-export const EARTH_RADIUS_KM = 6371.0;
+const EARTH_RADIUS_KM = 6371.0;
 
 export type LonLat = readonly [number, number];
 
@@ -158,69 +158,4 @@ export function greatCircleDistanceKm(a: LonLat, b: LonLat): number {
   const vb = toUnitVector(b[0], b[1]);
   const angle = Math.atan2(Math.hypot(...cross(va, vb)), dot(va, vb));
   return angle * EARTH_RADIUS_KM;
-}
-
-/** Angular distance from `p` to the great circle through `a` and `b`, in degrees. */
-function greatCircleDeviation(
-  p: readonly [number, number, number],
-  a: readonly [number, number, number],
-  b: readonly [number, number, number],
-): number {
-  const normal = cross(a, b);
-  const length = Math.hypot(...normal);
-  if (length === 0) {
-    // Coincident endpoints: fall back to the distance from the point they share.
-    return Math.atan2(Math.hypot(...cross(p, a)), dot(p, a)) * RAD_TO_DEG;
-  }
-  return Math.asin(Math.min(1, Math.abs(dot(p, normal)) / length)) * RAD_TO_DEG;
-}
-
-/**
- * Ramer–Douglas–Peucker simplification done on the sphere, with `tolerance` an
- * angular distance in degrees.
- *
- * {@link simplify} measures deviation in the lon/lat plane, which is the right answer
- * for data already cut to fit a rectangle. Reconstructed geometry is not: a plate at
- * 100 Ma sits wherever the rotation put it, so its outline crosses ±180° without a
- * seam and runs close to the poles, and both wreck a planar measurement — a segment
- * stepping from 179° to −179° reads as a 358° jump. Measuring the deviation as an
- * angle off the great circle through the endpoints has neither problem.
- */
-export function simplifyGreatCircle(points: readonly LonLat[], tolerance: number): LonLat[] {
-  if (points.length <= 2) {
-    return [...points];
-  }
-  const vectors = points.map(([lon, lat]) => toUnitVector(lon, lat));
-
-  // Iterative rather than recursive: a reconstructed ring can carry thousands of
-  // vertices, and the recursive form overflows the stack on the pathological cases.
-  const keep = new Uint8Array(points.length);
-  keep[0] = 1;
-  keep[points.length - 1] = 1;
-  const pending: [number, number][] = [[0, points.length - 1]];
-
-  while (pending.length > 0) {
-    const [first, last] = pending.pop() as [number, number];
-    if (last <= first + 1) {
-      continue;
-    }
-    const a = vectors[first] as [number, number, number];
-    const b = vectors[last] as [number, number, number];
-
-    let worst = 0;
-    let worstIndex = -1;
-    for (let i = first + 1; i < last; i++) {
-      const deviation = greatCircleDeviation(vectors[i] as [number, number, number], a, b);
-      if (deviation > worst) {
-        worst = deviation;
-        worstIndex = i;
-      }
-    }
-    if (worst > tolerance && worstIndex > 0) {
-      keep[worstIndex] = 1;
-      pending.push([first, worstIndex], [worstIndex, last]);
-    }
-  }
-
-  return points.filter((_, index) => keep[index] === 1);
 }

@@ -17,9 +17,6 @@ export type DepthBand = "shallow" | "intermediate" | "deep";
 /** What the user has chosen to show. */
 export type EarthquakeDepthFilter = "all" | DepthBand;
 
-/** The filter values, in the order they appear in the radio-button group. */
-export const EARTHQUAKE_DEPTH_FILTERS: readonly EarthquakeDepthFilter[] = ["all", "shallow", "intermediate", "deep"];
-
 /** The depth band a hypocentre falls in. */
 export function depthBand(depthKm: number): DepthBand {
   if (depthKm < SHALLOW_DEPTH_LIMIT_KM) {

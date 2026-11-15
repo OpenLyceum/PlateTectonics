@@ -48,7 +48,7 @@ import { type Bounds2, type Vector2, Vector3 } from "scenerystack/dot";
 /** Vertical half-angle of the frustum, degrees. PhET's value, and it is a narrow lens:
  * a long focal length keeps the block's parallel edges nearly parallel, so the picture
  * reads as a geological block diagram rather than a wide-angle photograph. */
-export const DEFAULT_HALF_FOV_DEGREES = 20;
+const DEFAULT_HALF_FOV_DEGREES = 20;
 
 /** How far the far side of the block is lifted up the screen, degrees. PhET's value at
  * full zoom-in, kept fixed here because the framing solver now does the job their

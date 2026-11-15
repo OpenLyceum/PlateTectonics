@@ -33,9 +33,6 @@ import { VERTICAL_EXAGGERATION_DEFAULT, VERTICAL_EXAGGERATION_RANGE } from "../.
 /** How a schematic screen presents its subject. */
 export type SectionViewMode = "block" | "flat";
 
-/** The modes in the order they appear in the control. */
-export const SECTION_VIEW_MODES: readonly SectionViewMode[] = ["block", "flat"];
-
 export class SectionViewModel {
   /**
    * Which way the screen is drawn. Opens on the block, which is the view PhET's Java
