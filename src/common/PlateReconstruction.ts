@@ -63,6 +63,7 @@ const MATRIX_SIZE = 9;
  * Every rotation the reconstruction can apply, in index order: the plates first — so
  * a plate index and a frame index are the same number — then the rotations derived
  * for the plate boundaries.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const MOTION_FRAMES: readonly RotationVector[] = [...PLATES, ...DERIVED_MOTION_FRAMES];
 

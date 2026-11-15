@@ -43,6 +43,7 @@ const SHALLOW_RAMP_SHARE = 0.8;
  * the centre of the Earth is compressed into what is left. A single linear ramp over
  * the full span would make the entire interior one flat colour, and one over the
  * crustal span alone would saturate the moment the view zoomed out past the mantle.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function densityRatio(densityKgM3: number): number {
   const { min, max } = DENSITY_SCALE_RANGE;
@@ -64,6 +65,7 @@ export function densityRatio(densityKgM3: number): number {
  * rigid lithosphere and ductile asthenosphere is a few hundred kelvin out of six
  * thousand, and on a linear ramp it would be invisible. The clamp keeps the coldest
  * rock from going pure black, where nothing can be distinguished from anything else.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function temperatureRatio(temperatureK: number): number {
   const span = TEMPERATURE_SCALE_MAX_K - SURFACE_TEMPERATURE_K;
@@ -73,7 +75,10 @@ export function temperatureRatio(temperatureK: number): number {
   return min + corrected * (max - min);
 }
 
-/** Fill for rock of a given density. Denser rock is darker. */
+/**
+ * Fill for rock of a given density. Denser rock is darker.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function densityFill(densityKgM3: number): Color {
   return Color.interpolateRGBA(
     PlateTectonicsColors.densityRampLowColorProperty.value,
@@ -82,7 +87,10 @@ export function densityFill(densityKgM3: number): Color {
   );
 }
 
-/** Fill for rock at a given temperature. Hotter rock is redder. */
+/**
+ * Fill for rock at a given temperature. Hotter rock is redder.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function temperatureFill(temperatureK: number): Color {
   return Color.interpolateRGBA(
     PlateTectonicsColors.temperatureRampLowColorProperty.value,
@@ -97,6 +105,7 @@ export function temperatureFill(temperatureK: number): Color {
  * Multiplying rather than averaging, so density reads as *shading* on top of the
  * temperature colour instead of washing it out. A cold dense slab therefore comes out
  * near-black against warm pale mantle, which is exactly the contrast worth seeing.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function combinedFill(densityKgM3: number, temperatureK: number): Color {
   const hot = temperatureFill(temperatureK);

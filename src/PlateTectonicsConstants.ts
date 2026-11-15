@@ -123,7 +123,10 @@ export const SHALLOW_DEPTH_LIMIT_KM = 70;
 /** Depth (km) below which earthquakes count as "deep". */
 export const INTERMEDIATE_DEPTH_LIMIT_KM = 300;
 
-/** The deepest earthquakes ever recorded are just over 700 km down. */
+/**
+ * The deepest earthquakes ever recorded are just over 700 km down.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const MAX_EARTHQUAKE_DEPTH_KM = 700;
 
 /**

@@ -85,7 +85,7 @@ const UNITS_PIXELS = 12;
 const MIN_BODY_PIXELS = 48;
 
 /** How a ruler of a given drawn length is numbered. */
-export type TickLabelFit = {
+type TickLabelFit = {
   /** One entry per major tick: its number, or "" for a tick drawn without one. */
   readonly labels: string[];
 
@@ -107,6 +107,7 @@ export type TickLabelFit = {
  * and every tick after it is left blank: with no next number there is no space to run out
  * of. Nothing is lost by that, because with `insetsWidth: 0` RulerNode does not draw the
  * first or last label anyway — the ends of the body are those two marks.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function fitTickLabels(values: readonly string[], pixelLength: number): TickLabelFit {
   const spacing = pixelLength / (values.length - 1);

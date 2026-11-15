@@ -29,26 +29,44 @@
 import { Color } from "scenerystack/scenery";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 
-/** Below this, the ground is bare sea floor and its colour depends only on depth. */
+/**
+ * Below this, the ground is bare sea floor and its colour depends only on depth.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const SEABED_TOP_M = -500;
 
-/** Above this, the ground is fully vegetated; between the two it blends. */
+/**
+ * Above this, the ground is fully vegetated; between the two it blends.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const SHORE_TOP_M = 1000;
 
-/** Depth at which the sea floor reaches its darkest, m below sea level. */
+/**
+ * Depth at which the sea floor reaches its darkest, m below sea level.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const SEABED_DEEPEST_M = -7000;
 
-/** Above this, snow begins to show through the vegetation. */
+/**
+ * Above this, snow begins to show through the vegetation.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const SNOW_START_M = 3000;
 
-/** Above this, the ground is entirely snow. */
+/**
+ * Above this, the ground is entirely snow.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const SNOW_FULL_M = 10000;
 
 function clamp01(value: number): number {
   return value < 0 ? 0 : value > 1 ? 1 : value;
 }
 
-/** The bare sea floor at a given elevation: paler on the shelf, darker in the deeps. */
+/**
+ * The bare sea floor at a given elevation: paler on the shelf, darker in the deeps.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function seabedColor(elevationM: number): Color {
   return Color.interpolateRGBA(
     PlateTectonicsColors.terrainDeepSeabedColorProperty.value,
@@ -57,7 +75,10 @@ export function seabedColor(elevationM: number): Color {
   );
 }
 
-/** Vegetated land at a given elevation: grass, going to snow up high. */
+/**
+ * Vegetated land at a given elevation: grass, going to snow up high.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function landColor(elevationM: number): Color {
   if (elevationM <= SNOW_START_M) {
     return PlateTectonicsColors.terrainGrassColorProperty.value;

@@ -281,7 +281,10 @@ function chamberWindow(down: PlateType, over: PlateType): { startMyr: number; en
   return { startMyr, endMyr: startMyr + spanMyr };
 }
 
-/** When the chamber under this pairing's arc is full, Myr. */
+/**
+ * When the chamber under this pairing's arc is full, Myr.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function chamberFullAtMyr(down: PlateType, over: PlateType): number {
   return chamberWindow(down, over).endMyr;
 }
@@ -290,6 +293,7 @@ export function chamberFullAtMyr(down: PlateType, over: PlateType): number {
  * How full the chamber under the arc is at `tMyr`, 0 to 1.
  *
  * The screen's answer to "why is there a slab but no volcano yet". Nothing erupts below 1.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function chamberFullness(down: PlateType, over: PlateType, tMyr: number): number {
   const { startMyr, endMyr } = chamberWindow(down, over);

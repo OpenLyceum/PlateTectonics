@@ -50,9 +50,12 @@ import { type Bounds2, type Vector2, Vector3 } from "scenerystack/dot";
  * reads as a geological block diagram rather than a wide-angle photograph. */
 const DEFAULT_HALF_FOV_DEGREES = 20;
 
-/** How far the far side of the block is lifted up the screen, degrees. PhET's value at
+/**
+ * How far the far side of the block is lifted up the screen, degrees. PhET's value at
  * full zoom-in, kept fixed here because the framing solver now does the job their
- * zoom-dependent angle was doing. */
+ * zoom-dependent angle was doing.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const DEFAULT_TILT_DEGREES = 13;
 
 /** Fraction of the viewport the framed block fills, leaving a margin round the edge. */

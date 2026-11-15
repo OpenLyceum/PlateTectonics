@@ -98,6 +98,7 @@ function createFace(): PooledFace {
  *
  * Exported so the terrain and the water can shade themselves consistently with anything
  * that has to compute a colour before it reaches the renderer.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function lambertFactor(nx: number, ny: number, nz: number): number {
   const length = Math.hypot(nx, ny, nz);
@@ -108,7 +109,10 @@ export function lambertFactor(nx: number, ny: number, nz: number): number {
   return AMBIENT + (1 - AMBIENT) * Math.max(0, dot);
 }
 
-/** `color` dimmed to `factor` of its brightness, as a CSS string. */
+/**
+ * `color` dimmed to `factor` of its brightness, as a CSS string.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function shadeToCSS(color: Color, factor: number): string {
   const r = Math.round(Math.max(0, Math.min(255, color.r * factor)));
   const g = Math.round(Math.max(0, Math.min(255, color.g * factor)));

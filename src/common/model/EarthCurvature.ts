@@ -34,6 +34,7 @@ export const EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000;
  * Directly below the origin by one Earth radius, which is what makes the origin the
  * fixed point of the mapping: a point at sea level under the middle of the front face
  * is exactly R from the centre and stays where it is.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const EARTH_CENTER = new Vector3(0, -EARTH_RADIUS_M, 0);
 
@@ -74,6 +75,7 @@ export function radialFromDirections(xRadial: Vector3, zRadial: Vector3, elevati
 
 /**
  * A planar point — x and z along the surface, y above sea level — as a point in space.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function toRadial(xM: number, elevationM: number, zM: number): Vector3 {
   return radialFromDirections(xRadialVector(xM), zRadialVector(zM), elevationM);
@@ -84,6 +86,7 @@ export function toRadial(xM: number, elevationM: number, zM: number): Vector3 {
  *
  * Needed by the tools, which are dragged in screen space and have to report where they
  * are in the flat frame the models compute in.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function toPlanar(point: Vector3): Vector3 {
   const fromCentre = point.minus(EARTH_CENTER);
@@ -112,6 +115,7 @@ export function toPlanar(point: Vector3): Vector3 {
  * Not used by the renderer — the full mapping covers that — but it is the quantity that
  * says whether curvature is worth drawing at a given block size, and the tests assert
  * against it.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function curvatureDropM(xM: number, zM: number): number {
   return -toRadial(xM, 0, zM).y;

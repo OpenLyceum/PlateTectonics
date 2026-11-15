@@ -104,6 +104,7 @@ const BOUNDARY_CUTOFF_LIMIT_M = 55000;
  * anyway. Pure, and unit-tested in tests/PlateMotionLabelsNode.test.ts — a drag from the
  * chooser lands on the side this function says it does, so "the left half of the section is
  * the left plate" has to hold in both views and at any exaggeration.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function dropZoneBounds(placement: SectionPlacement, side: Side): Bounds2 {
   const sign = side === "left" ? -1 : 1;

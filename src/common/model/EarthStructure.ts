@@ -125,6 +125,7 @@ const MANTLE_TABLE_TOP_KM = 25;
  *
  * Clamped at the Moho: above it the table is describing crust, which this simulation
  * supplies itself. See {@link MANTLE_TABLE_TOP_KM}.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function mantleDensityAt(depthKm: number): number {
   return interpolateTable(MANTLE_DEPTH_DENSITY, Math.max(MANTLE_TABLE_TOP_KM, depthKm));
@@ -137,6 +138,7 @@ export function mantleDensityAt(depthKm: number): number {
  * the solid inner core. The jump at the core–mantle boundary — 5566 to 10000 kg/m³ — is
  * the largest density contrast anywhere in the Earth, considerably larger than the one
  * between rock and air at the surface.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function coreDensityAt(depthKm: number): number {
   if (depthKm < INNER_OUTER_CORE_BOUNDARY_KM) {

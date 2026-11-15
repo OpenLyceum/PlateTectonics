@@ -65,7 +65,10 @@ export function airyElevation(thicknessM: number, densityKgM3: number): number {
   return (buoyancy - AIRY_REFERENCE_OFFSET_M * MANTLE_DENSITY_KG_M3) / (MANTLE_DENSITY_KG_M3 - SEAWATER_DENSITY_KG_M3);
 }
 
-/** The reference column depth the offset implies, exposed for the model documentation and tests. */
+/**
+ * The reference column depth the offset implies, exposed for the model documentation and tests.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export function referenceColumnDepth(): number {
   return REFERENCE_COLUMN_DEPTH_M;
 }

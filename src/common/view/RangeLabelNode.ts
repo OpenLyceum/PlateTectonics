@@ -78,6 +78,7 @@ export type RangeLabelLayout = {
  * `labelHeight` is in view pixels and has to be measured from the built `Text`, which is
  * why this takes it rather than working it out: text height depends on the font, the
  * locale and the platform, and guessing it is what makes a label overlap its own bar.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export function rangeLabelLayout(
   placement: SectionPlacement,
