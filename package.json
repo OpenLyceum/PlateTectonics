@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Explore Earth's tectonic plates: boundaries, motion, earthquakes and volcanoes.",
+  "description": "Explore present-day tectonic data on a globe or flat map, crustal isostasy, and schematic plate-boundary motion across three interactive screens.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",

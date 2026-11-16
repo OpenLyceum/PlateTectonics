@@ -6,15 +6,19 @@ Explore plate tectonics across three screens: a present-day map of the Earth,
 crustal isostasy, and schematic plate motion. Built with
 [SceneryStack](https://scenerystack.org/).
 
-Toggle layers over a shaded relief map of the world — on a globe you can turn, or on a
-flat map you can pan and zoom — to see why earthquakes, volcanoes, mountains and
-trenches are all in the same places.
+Start with a globe showing oceans and coastlines, then turn on layers to compare
+plate boundaries, earthquakes, volcanoes, relief and seafloor age. Switch to a flat
+map to compare patterns across the whole world.
 
 ## Features
 
 **Earth** — a 3-D globe you can turn, or a flat map you can pan
-and zoom, with the same present-day layers drawn on either.
+and zoom, with the same present-day layers drawn on either. All layers start off;
+turn them on to investigate where geological features coincide. Earth shows fixed
+present-day geography, with motion arrows indicating current velocities. Geological
+time evolves on the Plate Motion screen; the former Deep Time screen has been removed.
 
+- **Plates**: a colour wash and outlines identifying the PB2002 tectonic plates.
 - **Plate boundaries** from the PB2002 plate model, colour-coded divergent /
   convergent / transform.
 - **Motion vectors**: each plate's absolute velocity, computed from its Euler pole and

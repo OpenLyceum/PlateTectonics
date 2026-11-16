@@ -4,11 +4,19 @@ Sim-specific context for AI assistants. General SceneryStack guidance: [OpenLyce
 
 ## Project
 
-Three screens. **Earth** is an interactive present-day map of the Earth's tectonic
+`src/main.ts` registers exactly three screens, in order: **Earth**, **Crust**,
+and **Plate Motion**. The former **Deep Time** screen has been removed.
+
+**Earth** is an interactive present-day map of the Earth's tectonic
 plates, drawn either on a rotatable 3-D globe (the default) or on a pannable flat map;
 everything on it is real data — plate model, earthquakes, volcanoes, elevation.
-It has no geological-time slider or reconstruction playback. **Crust** and **Plate
-Motion** are ports of the two tabs of PhET's Java simulation
+Earth opens on oceans and coastlines with every data layer off, including relief.
+Layer switches add plates, boundaries, motion vectors, earthquakes, volcanoes and
+hotspots, topography/bathymetry, and seafloor-age isochrons. The earthquake depth
+filter selects all, shallow, intermediate or deep events. Reset All restores the
+globe, disables every layer, resets the filter and returns both cameras home.
+It has no cross-section mode, geological-time slider or reconstruction playback.
+**Crust** and **Plate Motion** are ports of the two tabs of PhET's Java simulation
 (`Baseline/PhET/trunk/simulations-java/simulations/plate-tectonics/`), and are
 schematic rather than data-driven.
 
@@ -209,6 +217,10 @@ controls. A frame index is **not** interchangeable with a plate index outside th
 first `PLATES.length` entries.
 
 ### The three screens
+
+`src/main.ts` owns the screen list. Keep `README.md`, the `package.json` description
+and Baton's `structure/repos.json` descriptions and screen list aligned with it.
+Do not describe the retained rotation utilities as an Earth playback feature.
 
 `Earth` is data-driven: every geographic layer comes from a published dataset or
 the documented hotspot list. `Crust` and `Plate Motion` are schematic and compute
