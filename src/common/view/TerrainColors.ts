@@ -60,7 +60,7 @@ export const SNOW_START_M = 3000;
 export const SNOW_FULL_M = 10000;
 
 function clamp01(value: number): number {
-  return value < 0 ? 0 : value > 1 ? 1 : value;
+  return value < 0 ? 0 : Math.min(value, 1);
 }
 
 /**

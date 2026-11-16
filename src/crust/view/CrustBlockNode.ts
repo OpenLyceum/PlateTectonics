@@ -43,7 +43,7 @@ const JOIN_BLEND_M = 30000;
 
 /** A smooth ramp from 0 to 1 with zero slope at both ends, so the joins have no crease. */
 function smoothStep(t: number): number {
-  const clamped = t < 0 ? 0 : t > 1 ? 1 : t;
+  const clamped = t < 0 ? 0 : Math.min(t, 1);
   return clamped * clamped * (3 - 2 * clamped);
 }
 
