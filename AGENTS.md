@@ -131,6 +131,7 @@ A11y strings live under `a11y.earth` in each locale JSON, exposed via
 
 ## Compliance carve-outs
 
+- `.github/workflows/ci.yml`: `unused-mode: advisory` until both Knip default and production baselines are reviewed and cleared ([Baton/doc/knip.md](https://github.com/OpenLyceum/Baton/blob/main/doc/knip.md)).
 - **Generated data is excluded from Biome** (`biome.json` → `files.includes`). Those
   files are machine-formatted by `scripts/data/emit.ts` to keep numeric arrays compact.
 - **Canvas painting instead of Scenery nodes** for the map and the cross-sections, for
