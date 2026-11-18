@@ -65,9 +65,11 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
       (tMyr: number, pattern: string) => pattern.replace("{{value}}", toFixed(tMyr, 0)),
     );
 
+    // The global Play shortcut follows the button's enabled state. The PDOM order
+    // references the button directly, so hiding its visual container is insufficient.
     const canPlay = new DerivedProperty(
-      [model.animationStartedProperty, model.isFinishedProperty],
-      (started: boolean, finished: boolean) => started && !finished,
+      [automatic, model.animationStartedProperty, model.isFinishedProperty],
+      (isAutomatic: boolean, started: boolean, finished: boolean) => isAutomatic && started && !finished,
     );
 
     const playPauseButton = new PlayPauseButton(model.timer.isPlayingProperty, {
