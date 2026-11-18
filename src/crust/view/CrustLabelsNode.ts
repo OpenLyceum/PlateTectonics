@@ -105,8 +105,25 @@ export class CrustLabelsNode extends Node {
     this.rebuild();
   }
 
-  private rebuild(): void {
+  public override dispose(): void {
+    this.disposeLabels();
+    super.dispose();
+  }
+
+  /**
+   * Detaches and disposes every label tree this node built. Each one's Text and Path link
+   * to sim-lifetime string and color Properties, so removing it alone would leave it alive.
+   */
+  private disposeLabels(): void {
+    const labels = this.children;
     this.removeAllChildren();
+    for (const label of labels) {
+      label.disposeSubtree();
+    }
+  }
+
+  private rebuild(): void {
+    this.disposeLabels();
     if (!this.model.showLabelsProperty.value) {
       return;
     }

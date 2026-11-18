@@ -7,12 +7,20 @@
  * a block scope) so local strong references die when the helper returns.
  */
 
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { Bounds2 } from "scenerystack/dot";
 import { describe, expect, it } from "vitest";
+import { CrossSectionScale } from "../src/common/model/CrossSectionScale.js";
 import { SectionViewModel } from "../src/common/model/SectionViewModel.js";
 import { PlateReconstruction } from "../src/common/PlateReconstruction.js";
 import { TimeModel } from "../src/common/TimeModel.js";
+import { flatPlacement } from "../src/common/view/SectionPlacement.js";
 import { CrustModel } from "../src/crust/model/CrustModel.js";
+import { CrustLabelsNode } from "../src/crust/view/CrustLabelsNode.js";
 import { EarthModel } from "../src/earth/model/EarthModel.js";
+import { StringManager } from "../src/i18n/StringManager.js";
+import PlateTectonicsColors from "../src/PlateTectonicsColors.js";
+import { SECTION_VIEW_BOUNDS } from "../src/PlateTectonicsConstants.js";
 import { PlateMotionModel } from "../src/plate-motion/model/PlateMotionModel.js";
 import { describeDisposalLeaks, forceGC } from "./helpers/memoryLeak.js";
 
@@ -149,6 +157,61 @@ describe("Memory leak regression", () => {
     await forceGC(refs);
     const survivors = refs.filter((r) => r.deref() !== undefined).length;
     expect(survivors).toBe(0);
+  });
+});
+
+/** Axon re-declares getListenerCount() private on ReadOnlyProperty; the cast is deliberate. */
+function listenerCount(property: TReadOnlyProperty<unknown>): number {
+  return (property as unknown as { getListenerCount(): number }).getListenerCount();
+}
+
+describe("CrustLabelsNode releases the labels it rebuilds", () => {
+  it("rebuilds and dispose leave the sim-lifetime string and color Properties as they were", () => {
+    const section = StringManager.getInstance().getSectionStrings();
+    const watched: readonly TReadOnlyProperty<unknown>[] = [
+      section.seaLevelStringProperty,
+      section.crustStringProperty,
+      section.oceanicCrustStringProperty,
+      PlateTectonicsColors.textColorProperty,
+      PlateTectonicsColors.secondaryTextColorProperty,
+    ];
+    const bounds = new Bounds2(
+      SECTION_VIEW_BOUNDS.minX,
+      SECTION_VIEW_BOUNDS.minY,
+      SECTION_VIEW_BOUNDS.maxX,
+      SECTION_VIEW_BOUNDS.maxY,
+    );
+    const placement = flatPlacement(
+      new CrossSectionScale({
+        bounds,
+        halfWidthM: 700000,
+        topM: 16000,
+        bottomM: -300000,
+        bandBottomM: -20000,
+        bandHeightFraction: 0.3,
+      }),
+    );
+    const model = new CrustModel();
+    const before = watched.map(listenerCount);
+
+    const node = new CrustLabelsNode(model, placement, bounds);
+    const built = watched.map(listenerCount);
+    expect(built.some((count, index) => count > (before[index] ?? 0))).toBe(true);
+
+    // Each rebuild must replace the labels, not pile new subscribers on top of the old.
+    for (let i = 0; i < 5; i++) {
+      model.crustThicknessProperty.value += 1000;
+      node.setPlacement(placement);
+    }
+    expect(watched.map(listenerCount)).toEqual(built);
+
+    model.showLabelsProperty.value = false;
+    expect(watched.map(listenerCount)).toEqual(before);
+    model.showLabelsProperty.value = true;
+
+    node.dispose();
+    expect(watched.map(listenerCount)).toEqual(before);
+    model.dispose();
   });
 });
 
