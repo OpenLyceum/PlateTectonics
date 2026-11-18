@@ -8,20 +8,22 @@
  */
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { Bounds2 } from "scenerystack/dot";
+import { Bounds2, Vector2 } from "scenerystack/dot";
 import { describe, expect, it } from "vitest";
 import { CrossSectionScale } from "../src/common/model/CrossSectionScale.js";
 import { SectionViewModel } from "../src/common/model/SectionViewModel.js";
 import { PlateReconstruction } from "../src/common/PlateReconstruction.js";
 import { TimeModel } from "../src/common/TimeModel.js";
+import { RangeLabelNode } from "../src/common/view/RangeLabelNode.js";
 import { flatPlacement } from "../src/common/view/SectionPlacement.js";
 import { CrustModel } from "../src/crust/model/CrustModel.js";
 import { CrustLabelsNode } from "../src/crust/view/CrustLabelsNode.js";
 import { EarthModel } from "../src/earth/model/EarthModel.js";
 import { StringManager } from "../src/i18n/StringManager.js";
 import PlateTectonicsColors from "../src/PlateTectonicsColors.js";
-import { SECTION_VIEW_BOUNDS } from "../src/PlateTectonicsConstants.js";
+import { PLATE_X_LIMIT_M, SECTION_VIEW_BOUNDS } from "../src/PlateTectonicsConstants.js";
 import { PlateMotionModel } from "../src/plate-motion/model/PlateMotionModel.js";
+import { PlateMotionLabelsNode } from "../src/plate-motion/view/PlateMotionLabelsNode.js";
 import { describeDisposalLeaks, forceGC } from "./helpers/memoryLeak.js";
 
 function createAndDisposeTimeModel(): WeakRef<object> {
@@ -212,6 +214,117 @@ describe("CrustLabelsNode releases the labels it rebuilds", () => {
     node.dispose();
     expect(watched.map(listenerCount)).toEqual(before);
     model.dispose();
+  });
+});
+
+describe("PlateMotionLabelsNode releases the labels it rebuilds", () => {
+  it("rebuilds and dispose leave the sim-lifetime string and color Properties as they were", () => {
+    const section = StringManager.getInstance().getSectionStrings();
+    const motion = StringManager.getInstance().getPlateMotionStrings();
+    const a11y = StringManager.getInstance().getPlateMotionA11yStrings().controls;
+    const watched: readonly TReadOnlyProperty<unknown>[] = [
+      section.lithosphereStringProperty,
+      section.mantleStringProperty,
+      motion.continentalCrustLabelStringProperty,
+      motion.oldOceanicCrustLabelStringProperty,
+      motion.ridgeStringProperty,
+      motion.dropRightStringProperty,
+      a11y.leftDropZoneStringProperty,
+      a11y.rightDropZoneHelpStringProperty,
+      PlateTectonicsColors.textColorProperty,
+      PlateTectonicsColors.secondaryTextColorProperty,
+      PlateTectonicsColors.dropZoneColorProperty,
+      PlateTectonicsColors.dropZoneActiveColorProperty,
+      PlateTectonicsColors.panelBackgroundColorProperty,
+    ];
+    const bounds = new Bounds2(
+      SECTION_VIEW_BOUNDS.minX,
+      SECTION_VIEW_BOUNDS.minY,
+      SECTION_VIEW_BOUNDS.maxX,
+      SECTION_VIEW_BOUNDS.maxY,
+    );
+    const placement = flatPlacement(
+      new CrossSectionScale({
+        bounds,
+        halfWidthM: PLATE_X_LIMIT_M,
+        topM: 16000,
+        bottomM: -300000,
+        bandBottomM: -20000,
+        bandHeightFraction: 0.3,
+      }),
+    );
+    const model = new PlateMotionModel();
+    const before = watched.map(listenerCount);
+
+    // One plate down and a piece in hand: both zones are dressed, the empty one with its
+    // instruction on a backing.
+    model.setPlate("left", "continental");
+    model.armedPlateTypeProperty.value = "oldOceanic";
+    const node = new PlateMotionLabelsNode(model, placement, bounds);
+    const zonesBuilt = watched.map(listenerCount);
+    expect(zonesBuilt.some((count, index) => count > (before[index] ?? 0))).toBe(true);
+    for (const side of ["left", "right", null, "right", null] as const) {
+      node.setHoveredZone(side);
+    }
+    expect(watched.map(listenerCount)).toEqual(zonesBuilt);
+
+    // Both plates and a running boundary: the range labels, base lines and feature names,
+    // rebuilt on every tick of the clock.
+    model.activateZone("right");
+    model.motionTypeProperty.value = "divergent";
+    model.timeMillionsOfYearsProperty.value = 1;
+    const labelsBuilt = watched.map(listenerCount);
+    for (let i = 2; i < 8; i++) {
+      model.timeMillionsOfYearsProperty.value = i;
+      node.setPlacement(placement);
+    }
+    expect(watched.map(listenerCount)).toEqual(labelsBuilt);
+
+    node.dispose();
+    expect(watched.map(listenerCount)).toEqual(before);
+    model.dispose();
+  });
+});
+
+describe("RangeLabelNode releases its own parts", () => {
+  it("a plain dispose() leaves the label's string and color Properties as they were", () => {
+    const section = StringManager.getInstance().getSectionStrings();
+    const watched: readonly TReadOnlyProperty<unknown>[] = [
+      section.lithosphereStringProperty,
+      PlateTectonicsColors.textColorProperty,
+    ];
+    const bounds = new Bounds2(
+      SECTION_VIEW_BOUNDS.minX,
+      SECTION_VIEW_BOUNDS.minY,
+      SECTION_VIEW_BOUNDS.maxX,
+      SECTION_VIEW_BOUNDS.maxY,
+    );
+    const placement = flatPlacement(
+      new CrossSectionScale({
+        bounds,
+        halfWidthM: PLATE_X_LIMIT_M,
+        topM: 16000,
+        bottomM: -300000,
+        bandBottomM: -20000,
+        bandHeightFraction: 0.3,
+      }),
+    );
+    const before = watched.map(listenerCount);
+
+    // Both styles: the extent proper, and the collapsed one with a leader line.
+    for (const bottomM of [-100000, -500]) {
+      const label = new RangeLabelNode({
+        placement,
+        topM: new Vector2(0, 0),
+        bottomM: new Vector2(0, bottomM),
+        label: section.lithosphereStringProperty,
+        viewBounds: bounds,
+      });
+      expect(label.layout.collapsed).toBe(bottomM === -500);
+      expect(watched.map(listenerCount).some((count, index) => count > (before[index] ?? 0))).toBe(true);
+      label.dispose();
+      expect(watched.map(listenerCount)).toEqual(before);
+    }
   });
 });
 

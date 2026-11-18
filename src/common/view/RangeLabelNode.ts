@@ -141,6 +141,8 @@ export class RangeLabelNode extends Node {
   /** Where the parts of this label ended up — the same layout the node was built from. */
   public readonly layout: RangeLabelLayout;
 
+  private readonly disposeRangeLabelNode: () => void;
+
   public constructor(providedOptions: RangeLabelNodeOptions) {
     const {
       placement,
@@ -203,7 +205,20 @@ export class RangeLabelNode extends Node {
     // straight across the legend and the navigation bar below it. The name has already
     // been pulled inside by the layout, so it needs no clip and keeps its full bounds for
     // anything that measures it.
-    this.addChild(new Path(shape, { stroke: fill, lineWidth: 1, clipArea: Shape.bounds(viewBounds) }));
+    const bar = new Path(shape, { stroke: fill, lineWidth: 1, clipArea: Shape.bounds(viewBounds) });
+    this.addChild(bar);
     this.addChild(text);
+
+    // The bar and the name link to the label's string and to sim-lifetime color Properties,
+    // so this node owns their teardown: a plain dispose() releases the whole label.
+    this.disposeRangeLabelNode = () => {
+      bar.dispose();
+      text.dispose();
+    };
+  }
+
+  public override dispose(): void {
+    this.disposeRangeLabelNode();
+    super.dispose();
   }
 }

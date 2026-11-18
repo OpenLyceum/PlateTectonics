@@ -254,8 +254,29 @@ export class PlateMotionLabelsNode extends Node {
     this.rebuild();
   }
 
+  public override dispose(): void {
+    this.disposeContent();
+    for (const visuals of this.zoneVisuals) {
+      disposeChildren(visuals);
+    }
+    // The zones link their accessible names to sim-lifetime strings.
+    for (const zone of this.zones) {
+      zone.disposeSubtree();
+    }
+    super.dispose();
+  }
+
+  /**
+   * Detaches and disposes everything the last rebuild drew. Its range labels, base lines
+   * and feature names link to sim-lifetime string and color Properties, so removing them
+   * alone would leave every one of them alive.
+   */
+  private disposeContent(): void {
+    disposeChildren(this.contentLayer);
+  }
+
   private rebuild(): void {
-    this.contentLayer.removeAllChildren();
+    this.disposeContent();
 
     const model = this.model;
     const strings = StringManager.getInstance();
@@ -475,7 +496,8 @@ export class PlateMotionLabelsNode extends Node {
     if (!(zone && visuals)) {
       return;
     }
-    visuals.removeAllChildren();
+    // The wash, the outline and the instruction link to color and string Properties.
+    disposeChildren(visuals);
 
     const zoneBounds = dropZoneBounds(this.placement, side);
     this.zoneBounds[index] = zoneBounds;
@@ -552,5 +574,14 @@ export class PlateMotionLabelsNode extends Node {
         maxWidth: 180,
       }),
     );
+  }
+}
+
+/** Removes every child of `parent` and disposes each one's whole subtree. */
+function disposeChildren(parent: Node): void {
+  const children = parent.children;
+  parent.removeAllChildren();
+  for (const child of children) {
+    child.disposeSubtree();
   }
 }
