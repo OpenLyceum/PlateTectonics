@@ -90,8 +90,10 @@ export class PlateMotionModel implements TModel {
   // ── The boundary ────────────────────────────────────────────────────────────
 
   /** The plate on each side, or null until one has been dropped there. */
-  public readonly leftPlateTypeProperty = new Property<PlateType | null>(null);
-  public readonly rightPlateTypeProperty = new Property<PlateType | null>(null);
+  private readonly _leftPlateTypeProperty = new Property<PlateType | null>(null);
+  private readonly _rightPlateTypeProperty = new Property<PlateType | null>(null);
+  public readonly leftPlateTypeProperty: TReadOnlyProperty<PlateType | null> = this._leftPlateTypeProperty;
+  public readonly rightPlateTypeProperty: TReadOnlyProperty<PlateType | null> = this._rightPlateTypeProperty;
 
   /**
    * The crust piece the user has picked up and not yet placed, or null.
@@ -119,7 +121,8 @@ export class PlateMotionModel implements TModel {
   public readonly subductingSideProperty: TReadOnlyProperty<Side | null>;
 
   /** Latches once the motion is locked in — state C. */
-  public readonly animationStartedProperty = new BooleanProperty(false);
+  private readonly _animationStartedProperty = new BooleanProperty(false);
+  public readonly animationStartedProperty: TReadOnlyProperty<boolean> = this._animationStartedProperty;
 
   // ── The clock ───────────────────────────────────────────────────────────────
 
@@ -211,13 +214,13 @@ export class PlateMotionModel implements TModel {
     // no longer be legal for whatever is dropped next.
     this.motionTypeProperty.link((motion) => {
       if (motion !== null) {
-        this.animationStartedProperty.value = true;
+        this._animationStartedProperty.value = true;
       }
     });
     this.hasBothPlatesProperty.link((hasBoth) => {
       if (!hasBoth) {
         this.motionTypeProperty.value = null;
-        this.animationStartedProperty.value = false;
+        this._animationStartedProperty.value = false;
       }
     });
   }
@@ -225,9 +228,9 @@ export class PlateMotionModel implements TModel {
   /** Drops a plate into one side of the boundary. */
   public setPlate(side: Side, type: PlateType | null): void {
     if (side === "left") {
-      this.leftPlateTypeProperty.value = type;
+      this._leftPlateTypeProperty.value = type;
     } else {
-      this.rightPlateTypeProperty.value = type;
+      this._rightPlateTypeProperty.value = type;
     }
   }
 
@@ -330,11 +333,11 @@ export class PlateMotionModel implements TModel {
 
   /** Clears the boundary back to empty, keeping the view settings. */
   public newCrust(): void {
-    this.leftPlateTypeProperty.value = null;
-    this.rightPlateTypeProperty.value = null;
+    this._leftPlateTypeProperty.value = null;
+    this._rightPlateTypeProperty.value = null;
     this.motionTypeProperty.value = null;
     this.armedPlateTypeProperty.value = null;
-    this.animationStartedProperty.value = false;
+    this._animationStartedProperty.value = false;
     this.rewind();
   }
 

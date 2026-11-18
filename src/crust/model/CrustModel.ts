@@ -91,7 +91,8 @@ export class CrustModel implements TModel {
   public readonly targetElevationProperty: TReadOnlyProperty<number>;
 
   /** Where its surface actually is, m — relaxing toward the target. */
-  public readonly crustElevationProperty: NumberProperty;
+  public readonly crustElevationProperty: TReadOnlyProperty<number>;
+  private readonly _crustElevationProperty: NumberProperty;
 
   // ── View state that belongs to the model ────────────────────────────────────
 
@@ -155,7 +156,8 @@ export class CrustModel implements TModel {
     );
 
     // Opens already settled, so the screen is in equilibrium before it is touched.
-    this.crustElevationProperty = new NumberProperty(this.targetElevationProperty.value);
+    this._crustElevationProperty = new NumberProperty(this.targetElevationProperty.value);
+    this.crustElevationProperty = this._crustElevationProperty;
   }
 
   /** Index of the user's block within {@link columns}. */
@@ -283,7 +285,7 @@ export class CrustModel implements TModel {
       velocityMPerS: this.crustVelocityMPerS,
     };
     const next = stepRelaxation(state, this.targetElevationProperty.value, dt);
-    this.crustElevationProperty.value = next.elevationM;
+    this._crustElevationProperty.value = next.elevationM;
     this.crustVelocityMPerS = next.velocityMPerS;
   }
 
@@ -303,7 +305,7 @@ export class CrustModel implements TModel {
     // Snap rather than relax: Reset All should look like a reset, not like an
     // animation the user has to wait out.
     const settled = settledAt(this.targetElevationProperty.value);
-    this.crustElevationProperty.value = settled.elevationM;
+    this._crustElevationProperty.value = settled.elevationM;
     this.crustVelocityMPerS = settled.velocityMPerS;
   }
 
