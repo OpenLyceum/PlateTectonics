@@ -139,12 +139,14 @@ const PACIFIC_NNR_POLE = { lat: -63.045, lon: 107.374, rate: 0.6408 };
 
 // ── GeoJSON shapes (as published; property names are the source's own) ─────────
 
+type GeoJsonGeometry =
+  | { readonly type: "LineString"; readonly coordinates: LonLat[] }
+  | { readonly type: "Polygon" | "MultiLineString"; readonly coordinates: LonLat[][] }
+  | { readonly type: "MultiPolygon"; readonly coordinates: LonLat[][][] };
+
 interface GeoJsonFeature<P> {
   readonly properties: P;
-  readonly geometry: {
-    readonly type: string;
-    readonly coordinates: number[][][] | number[][][][] | number[][];
-  };
+  readonly geometry: GeoJsonGeometry;
 }
 
 interface GeoJsonCollection<P> {
@@ -164,19 +166,17 @@ type StepProperties = {
 /** Returns every ring of a Polygon / MultiPolygon / LineString feature. */
 function featureRings<P>(feature: GeoJsonFeature<P>): LonLat[][] {
   const { type, coordinates } = feature.geometry;
-  if (type === "LineString") {
-    return [coordinates as unknown as LonLat[]];
+  switch (type) {
+    case "LineString":
+      return [coordinates];
+    case "Polygon":
+    case "MultiLineString":
+      return coordinates;
+    case "MultiPolygon":
+      return coordinates.flat();
+    default:
+      throw new Error(`Unsupported geometry type ${type}`);
   }
-  if (type === "Polygon") {
-    return coordinates as unknown as LonLat[][];
-  }
-  if (type === "MultiPolygon") {
-    return (coordinates as number[][][][]).flat() as unknown as LonLat[][];
-  }
-  if (type === "MultiLineString") {
-    return coordinates as unknown as LonLat[][];
-  }
-  throw new Error(`Unsupported geometry type ${type}`);
 }
 
 // ── Plates ────────────────────────────────────────────────────────────────────
@@ -565,10 +565,10 @@ function meanRotationVector(a: Rotation, b: Rotation): Rotation {
  */
 function parseBoundaryName(name: string): { left: string; right: string; overriding: "left" | "right" | null } | null {
   const match = /^([A-Z]{2})([-\\/])([A-Z]{2})$/.exec(name);
-  if (!match) {
+  const [, left, separator, right] = match ?? [];
+  if (left === undefined || separator === undefined || right === undefined) {
     return null;
   }
-  const [, left, separator, right] = match as unknown as [string, string, string, string];
   return {
     left,
     right,
