@@ -138,7 +138,7 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
       ],
       (pattern: string, platesText: string, motionText: string, modeText: string, timeText: string, viewText: string) =>
         pattern
-          .replace("{{platesProperty}}", platesText)
+          .replace("{{plates}}", platesText)
           .replace("{{motion}}", motionText)
           .replace("{{mode}}", modeText)
           .replace("{{time}}", timeText)
