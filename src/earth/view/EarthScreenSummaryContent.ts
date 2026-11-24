@@ -22,13 +22,13 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
     const layerStrings = strings.getLayerStrings();
 
     // Which view is on screen.
-    const viewDescription = new DerivedStringProperty(
+    const viewDescriptionProperty = new DerivedStringProperty(
       [model.showGlobeProperty, a11y.viewDetails.globalStringProperty, a11y.viewDetails.globeStringProperty],
       (showGlobe: boolean, global: string, globe: string) => (showGlobe ? globe : global),
     );
 
     // Which layers are switched on, listed by name.
-    const layerList = new DerivedStringProperty(
+    const layerListProperty = new DerivedStringProperty(
       [
         model.showPlatesProperty,
         model.showBoundariesProperty,
@@ -73,17 +73,17 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
           .filter((name): name is string => name !== null)
           .join(", "),
     );
-    const layersDescription = new DerivedStringProperty(
+    const layersDescriptionProperty = new DerivedStringProperty(
       [
-        layerList,
-        new PatternStringProperty(a11y.layersDetailsStringProperty, { layers: layerList }),
+        layerListProperty,
+        new PatternStringProperty(a11y.layersDetailsStringProperty, { layers: layerListProperty }),
         a11y.noLayersStringProperty,
       ],
       (list: string, withLayers: string, none: string) => (list === "" ? none : withLayers),
     );
 
     // Which earthquake depths pass the filter.
-    const depthDescription = new DerivedStringProperty(
+    const depthDescriptionProperty = new DerivedStringProperty(
       [
         model.earthquakeDepthFilterProperty,
         a11y.depthDetails.allStringProperty,
@@ -106,9 +106,9 @@ export class EarthScreenSummaryContent extends ScreenSummaryContent {
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
       currentDetailsContent: new PatternStringProperty(a11y.currentDetailsStringProperty, {
-        view: viewDescription,
-        layers: layersDescription,
-        depths: depthDescription,
+        view: viewDescriptionProperty,
+        layers: layersDescriptionProperty,
+        depths: depthDescriptionProperty,
       }),
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });

@@ -17,6 +17,7 @@
  */
 
 import type { Bounds2 } from "scenerystack/dot";
+import { roundSymmetric } from "scenerystack/dot";
 import type { MapProjection } from "../../common/MapProjection.js";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import type { EarthModel } from "../model/EarthModel.js";
@@ -178,11 +179,11 @@ export class MapCanvasNode extends EarthCanvasNode {
       this.reconstruction.transform(coords[i] as number, coords[i + 1] as number, frame);
 
       if (vertex === 0) {
-        originTurns = Math.round((centerLon - this.reconstruction.lon) / 360);
+        originTurns = roundSymmetric((centerLon - this.reconstruction.lon) / 360);
       }
       let lon = this.reconstruction.lon + (originTurns + turns) * 360;
       if (vertex > 0 && Math.abs(lon - previousLon) > ANTIMERIDIAN_JUMP) {
-        const correction = Math.round((previousLon - lon) / 360);
+        const correction = roundSymmetric((previousLon - lon) / 360);
         turns += correction;
         lon += correction * 360;
       }

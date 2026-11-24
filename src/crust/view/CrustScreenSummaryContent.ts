@@ -23,13 +23,13 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
   public constructor(model: CrustModel) {
     const a11y = StringManager.getInstance().getCrustA11yStrings();
 
-    const crustDetails = new DerivedStringProperty(
+    const crustDetailsProperty = new DerivedStringProperty(
       [model.crustThicknessProperty, model.crustDensityProperty, a11y.crustDetailsStringProperty],
       (thicknessM: number, density: number, pattern: string) =>
         pattern.replace("{{thickness}}", toFixed(thicknessM / 1000, 0)).replace("{{density}}", toFixed(density, 0)),
     );
 
-    const elevationDetails = new DerivedStringProperty(
+    const elevationDetailsProperty = new DerivedStringProperty(
       [model.crustElevationProperty, a11y.elevationAboveStringProperty, a11y.elevationBelowStringProperty],
       (elevationM: number, above: string, below: string) => {
         const km = toFixed(Math.abs(elevationM / 1000), 1);
@@ -37,7 +37,7 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
       },
     );
 
-    const colorModeDetails = new DerivedStringProperty(
+    const colorModeDetailsProperty = new DerivedStringProperty(
       [
         model.colorModeProperty,
         a11y.colorModeDetailsStringProperty,
@@ -51,7 +51,7 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
       },
     );
 
-    const zoomDetails = new DerivedStringProperty(
+    const zoomDetailsProperty = new DerivedStringProperty(
       [
         model.zoomProperty,
         a11y.zoomDetailsStringProperty,
@@ -67,8 +67,15 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
 
     const viewDetails = createSectionViewDescription(model.sectionView);
 
-    const currentDetails = new DerivedStringProperty(
-      [a11y.currentDetailsStringProperty, crustDetails, elevationDetails, colorModeDetails, zoomDetails, viewDetails],
+    const currentDetailsProperty = new DerivedStringProperty(
+      [
+        a11y.currentDetailsStringProperty,
+        crustDetailsProperty,
+        elevationDetailsProperty,
+        colorModeDetailsProperty,
+        zoomDetailsProperty,
+        viewDetails,
+      ],
       (pattern: string, crust: string, elevation: string, colorMode: string, zoom: string, view: string) =>
         pattern
           .replace("{{crust}}", crust)
@@ -81,17 +88,17 @@ export class CrustScreenSummaryContent extends ScreenSummaryContent {
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: currentDetails,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
 
     this.disposeEmitter.addListener(() => {
-      currentDetails.dispose();
+      currentDetailsProperty.dispose();
       viewDetails.dispose();
-      zoomDetails.dispose();
-      colorModeDetails.dispose();
-      elevationDetails.dispose();
-      crustDetails.dispose();
+      zoomDetailsProperty.dispose();
+      colorModeDetailsProperty.dispose();
+      elevationDetailsProperty.dispose();
+      crustDetailsProperty.dispose();
     });
   }
 }

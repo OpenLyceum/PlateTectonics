@@ -118,15 +118,15 @@ export class MyCrustControlPanel extends PlateTectonicsPanel {
     });
 
     // ── Live consequences of the three sliders ────────────────────────────────
-    const thicknessReadout = new DerivedStringProperty(
+    const thicknessReadoutProperty = new DerivedStringProperty(
       [model.crustThicknessProperty, crust.thicknessPatternStringProperty],
       (thicknessM: number, pattern: string) => pattern.replace("{{value}}", toFixed(thicknessM / 1000, 0)),
     );
-    const elevationReadout = new DerivedStringProperty(
+    const elevationReadoutProperty = new DerivedStringProperty(
       [model.crustElevationProperty, crust.elevationPatternStringProperty],
       (elevationM: number, pattern: string) => pattern.replace("{{value}}", toFixed(elevationM / 1000, 1)),
     );
-    const densityReadout = new DerivedStringProperty(
+    const densityReadoutProperty = new DerivedStringProperty(
       [model.crustDensityProperty, crust.densityPatternStringProperty],
       (density: number, pattern: string) => pattern.replace("{{value}}", toFixed(density, 0)),
     );
@@ -164,7 +164,11 @@ export class MyCrustControlPanel extends PlateTectonicsPanel {
         new VBox({
           spacing: 1,
           align: "left",
-          children: [readout(thicknessReadout), readout(elevationReadout), readout(densityReadout)],
+          children: [
+            readout(thicknessReadoutProperty),
+            readout(elevationReadoutProperty),
+            readout(densityReadoutProperty),
+          ],
         }),
       ],
     });
@@ -178,9 +182,9 @@ export class MyCrustControlPanel extends PlateTectonicsPanel {
     this.focusOrder = [temperatureSlider, compositionSlider, thicknessSlider];
 
     this.disposeEmitter.addListener(() => {
-      densityReadout.dispose();
-      elevationReadout.dispose();
-      thicknessReadout.dispose();
+      densityReadoutProperty.dispose();
+      elevationReadoutProperty.dispose();
+      thicknessReadoutProperty.dispose();
     });
   }
 }

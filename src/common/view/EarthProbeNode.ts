@@ -18,6 +18,7 @@
 
 import { DerivedProperty, type Property, type TReadOnlyProperty } from "scenerystack/axon";
 import type { Bounds2, Vector2 } from "scenerystack/dot";
+import { roundSymmetric } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Circle, DragListener, KeyboardListener, Node, type NodeOptions, Path, Text, VBox } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
@@ -115,7 +116,7 @@ export class EarthProbeNode extends Node {
     ): { text: Text; property: TReadOnlyProperty<string> } => {
       const property = DerivedProperty.deriveAny([positionProperty, pattern, ...readoutDependencies], () => {
         const { x, y } = positionProperty.value;
-        return pattern.value.replace("{{value}}", Math.round(valueAt(x, y)).toString());
+        return pattern.value.replace("{{value}}", roundSymmetric(valueAt(x, y)).toString());
       });
       const text = new Text(property, {
         font: READOUT_FONT,

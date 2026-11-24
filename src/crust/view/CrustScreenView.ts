@@ -211,15 +211,15 @@ export class CrustScreenView extends ScreenView {
     // them live would offer a control whose effect cannot be seen. Kept at the lithosphere
     // zoom, where PhET also hid it: there the block is still a visible sliver and watching
     // it change against 100 km of lithosphere is the comparison that zoom is for.
-    const crustPanelVisible = new DerivedProperty([model.zoomProperty], (zoom: CrustZoom) => zoom !== "earth");
-    crustPanel.visibleProperty = crustPanelVisible;
+    const crustPanelVisibleProperty = new DerivedProperty([model.zoomProperty], (zoom: CrustZoom) => zoom !== "earth");
+    crustPanel.visibleProperty = crustPanelVisibleProperty;
 
     // The panel below it moves up to fill the space rather than leaving a hole where it
     // was. Positions are set once at construction, so it has to be re-set here.
-    crustPanelVisible.link((visible) => {
+    crustPanelVisibleProperty.link((visible) => {
       viewPanel.top = visible ? crustPanel.bottom + PANEL_SPACING : bounds.minY;
     });
-    this.disposeEmitter.addListener(() => crustPanelVisible.dispose());
+    this.disposeEmitter.addListener(() => crustPanelVisibleProperty.dispose());
 
     this.addChild(crustPanel);
     this.addChild(viewPanel);
