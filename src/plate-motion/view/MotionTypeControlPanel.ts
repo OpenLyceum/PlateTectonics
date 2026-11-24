@@ -55,11 +55,11 @@ export class MotionTypeControlPanel extends PlateTectonicsPanel {
 
     const items = MOTION_TYPES.map((type) => {
       // A motion is available only while this pairing can do it and nothing has started.
-      const enabled = new DerivedProperty(
+      const motionEnabledProperty = new DerivedProperty(
         [model.legalMotionTypesProperty, model.animationStartedProperty],
         (legal: readonly MotionType[], started: boolean) => !started && legal.includes(type),
       );
-      disposers.push(() => enabled.dispose());
+      disposers.push(() => motionEnabledProperty.dispose());
 
       return {
         value: type as MotionType | null,
@@ -79,7 +79,7 @@ export class MotionTypeControlPanel extends PlateTectonicsPanel {
               }),
             ],
           }),
-        options: { enabledProperty: enabled },
+        options: { enabledProperty: motionEnabledProperty },
       };
     });
 

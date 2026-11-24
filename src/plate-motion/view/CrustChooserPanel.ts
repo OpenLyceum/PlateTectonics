@@ -135,7 +135,7 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
         ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
         content: pieceContent(type),
         baseColor: PlateTectonicsColors.controlSurfaceColorProperty,
-        accessibleNameProperty,
+        accessibleName: accessibleNameProperty,
         accessibleHelpText: a11y.crustPieceHelpStringProperty,
         listener: () => {
           // Picks the piece up, or puts it back down if it was already in hand.
@@ -148,7 +148,7 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
       // the comparison the screen is asking the user to make.
       const enabledProperty = new DerivedProperty([model.animationStartedProperty], (started: boolean) => !started);
       enabledProperty.link((value) => {
-        button.enabledProperty = value;
+        button.enabled = value;
       });
 
       // Ringed while it is the piece being carried, in the same colour the two zones take
