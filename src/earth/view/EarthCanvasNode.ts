@@ -23,6 +23,7 @@
  */
 
 import { Multilink } from "scenerystack/axon";
+import { combineOptions, type StrictOmit } from "scenerystack/phet-core";
 import { CanvasNode, type CanvasNodeOptions, Color } from "scenerystack/scenery";
 import type { BoundaryType } from "../../common/data/dataTypes.js";
 import { BOUNDARY_SEGMENTS } from "../../common/data/generated/boundaryData.js";
@@ -60,7 +61,7 @@ export { isSeamSegment, type RingMode } from "../../common/view/GlobeFeaturePain
 /** Depth bands in draw order: deep first, so the shallow crowd along the trenches stays on top. */
 const DEPTH_BANDS: readonly DepthBand[] = ["deep", "intermediate", "shallow"];
 
-export type EarthCanvasNodeOptions = CanvasNodeOptions;
+export type EarthCanvasNodeOptions = StrictOmit<CanvasNodeOptions, "canvasBounds">;
 
 export abstract class EarthCanvasNode extends CanvasNode {
   protected readonly model: EarthModel;
@@ -71,8 +72,8 @@ export abstract class EarthCanvasNode extends CanvasNode {
   /** The shaded relief raster, once it has finished decoding. */
   protected reliefImage: HTMLImageElement | null = null;
 
-  protected constructor(model: EarthModel, projection: EarthProjection, options?: EarthCanvasNodeOptions) {
-    super({ canvasBounds: projection.viewBounds, ...options });
+  protected constructor(model: EarthModel, projection: EarthProjection, providedOptions?: EarthCanvasNodeOptions) {
+    super(combineOptions<CanvasNodeOptions>({}, providedOptions, { canvasBounds: projection.viewBounds }));
     this.model = model;
     this.projection = projection;
 

@@ -18,6 +18,7 @@
 
 import { Multilink } from "scenerystack/axon";
 import type { Bounds2 } from "scenerystack/dot";
+import { combineOptions, type StrictOmit } from "scenerystack/phet-core";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
 import type { CrossSectionScale } from "../../common/model/CrossSectionScale.js";
 import { materialFill } from "../../common/view/EarthMaterial.js";
@@ -33,7 +34,7 @@ const SAMPLE_HEIGHT = 3;
 /** Extra size on each painted tile, view pixels, so neighbours overlap instead of seaming. */
 const SEAM_OVERLAP = 0.75;
 
-export type CrustCanvasNodeOptions = CanvasNodeOptions;
+export type CrustCanvasNodeOptions = StrictOmit<CanvasNodeOptions, "canvasBounds">;
 
 export class CrustCanvasNode extends CanvasNode {
   private readonly model: CrustModel;
@@ -47,7 +48,7 @@ export class CrustCanvasNode extends CanvasNode {
     bounds: Bounds2,
     providedOptions?: CrustCanvasNodeOptions,
   ) {
-    super({ canvasBounds: bounds, ...providedOptions });
+    super(combineOptions<CanvasNodeOptions>({}, providedOptions, { canvasBounds: bounds }));
     this.model = model;
     this.sectionScale = sectionScale;
 
