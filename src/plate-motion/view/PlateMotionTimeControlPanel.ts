@@ -1,7 +1,7 @@
 /**
  * PlateMotionTimeControlPanel.ts
  *
- * Running the boundary: play, pause, step, a speed slider, an elapsed-time readout, and
+ * Running the boundary: play, pause, step, a speed slider, an elapsedProperty-time readout, and
  * the two buttons that start it over.
  *
  * Rewind and New Crust are different things and both are needed. Rewind replays the same
@@ -12,7 +12,7 @@
  * The whole panel is disabled until a motion has been chosen, because until then there is
  * no history to run.
  *
- * In manual mode it collapses to the elapsed readout plus Rewind and New Crust, as PhET's
+ * In manual mode it collapses to the elapsedProperty readout plus Rewind and New Crust, as PhET's
  * `TectonicsTimeControl` does: there is no clock to play, pause, step or set the speed of,
  * because the user *is* the clock. Leaving the transport controls on screen but inert
  * would say the mode had not taken effect.
@@ -55,31 +55,31 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
     const a11y = strings.getPlateMotionA11yStrings().controls;
 
     // Nothing to run until a boundary type has been chosen.
-    const running = new DerivedProperty([model.animationStartedProperty], (started: boolean) => started);
+    const runningProperty = new DerivedProperty([model.animationStartedProperty], (started: boolean) => started);
 
     // The transport controls exist only while there is a clock for them to control.
-    const automatic = new DerivedProperty([model.isManualModeProperty], (manual: boolean) => !manual);
+    const automaticProperty = new DerivedProperty([model.isManualModeProperty], (manual: boolean) => !manual);
 
-    const elapsed = new DerivedStringProperty(
+    const elapsedProperty = new DerivedStringProperty(
       [model.timeMillionsOfYearsProperty, motion.elapsedPatternStringProperty],
       (tMyr: number, pattern: string) => pattern.replace("{{value}}", toFixed(tMyr, 0)),
     );
 
     // The global Play shortcut follows the button's enabled state. The PDOM order
     // references the button directly, so hiding its visual container is insufficient.
-    const canPlay = new DerivedProperty(
-      [automatic, model.animationStartedProperty, model.isFinishedProperty],
+    const canPlayProperty = new DerivedProperty(
+      [automaticProperty, model.animationStartedProperty, model.isFinishedProperty],
       (isAutomatic: boolean, started: boolean, finished: boolean) => isAutomatic && started && !finished,
     );
 
     const playPauseButton = new PlayPauseButton(model.timer.isPlayingProperty, {
       ...FLAT_BUTTON_APPEARANCE_OPTIONS,
       radius: 18,
-      enabledProperty: canPlay,
+      enabledProperty: canPlayProperty,
     });
 
     // Stepping only makes sense while paused; while playing it would fight the clock.
-    const canStep = new DerivedProperty(
+    const canStepProperty = new DerivedProperty(
       [model.animationStartedProperty, model.timer.isPlayingProperty, model.isFinishedProperty],
       (started: boolean, playing: boolean, finished: boolean) => started && !playing && !finished,
     );
@@ -87,7 +87,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
     const stepButton = new StepForwardButton({
       ...FLAT_BUTTON_APPEARANCE_OPTIONS,
       radius: 14,
-      enabledProperty: canStep,
+      enabledProperty: canStepProperty,
       listener: () => model.stepManual(),
     });
 
@@ -126,7 +126,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
       a11y.rewindStringProperty,
       a11y.rewindHelpStringProperty,
       () => model.rewind(),
-      running,
+      runningProperty,
     );
     const newCrustButton = pushButton(
       motion.newCrustStringProperty,
@@ -147,7 +147,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
           fill: PlateTectonicsColors.textColorProperty,
           maxWidth: CONTROL_PANEL_WIDTH - 30,
         }),
-        new Text(elapsed, {
+        new Text(elapsedProperty, {
           font: READOUT_FONT,
           fill: PlateTectonicsColors.accentColorProperty,
           maxWidth: CONTROL_PANEL_WIDTH - 30,
@@ -155,7 +155,7 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
         new VBox({
           spacing: 8,
           align: "left",
-          visibleProperty: automatic,
+          visibleProperty: automaticProperty,
           children: [
             new HBox({ spacing: 10, align: "center", children: [playPauseButton, stepButton] }),
             new VBox({
@@ -189,11 +189,11 @@ export class PlateMotionTimeControlPanel extends PlateTectonicsPanel {
     this.focusOrder = [playPauseButton, stepButton, speedSlider, rewindButton, newCrustButton];
 
     this.disposeEmitter.addListener(() => {
-      canStep.dispose();
-      canPlay.dispose();
-      elapsed.dispose();
-      automatic.dispose();
-      running.dispose();
+      canStepProperty.dispose();
+      canPlayProperty.dispose();
+      elapsedProperty.dispose();
+      automaticProperty.dispose();
+      runningProperty.dispose();
     });
   }
 }

@@ -13,6 +13,7 @@
 
 import { Multilink } from "scenerystack/axon";
 import type { Bounds2, Vector2 } from "scenerystack/dot";
+import { combineOptions, type StrictOmit } from "scenerystack/phet-core";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
 import type { CrossSectionScale } from "../../common/model/CrossSectionScale.js";
 import { paintArrowHead } from "../../common/view/CanvasArrows.js";
@@ -41,7 +42,7 @@ const MOTION_ARROW_LENGTH = 46;
  */
 const VOLCANO_WIDTH_PER_HEIGHT = 0.8;
 
-export type PlateMotionCanvasNodeOptions = CanvasNodeOptions;
+export type PlateMotionCanvasNodeOptions = StrictOmit<CanvasNodeOptions, "canvasBounds">;
 
 /**
  * The ground profile across the whole section, left edge to right edge.
@@ -68,7 +69,7 @@ export class PlateMotionCanvasNode extends CanvasNode {
     bounds: Bounds2,
     providedOptions?: PlateMotionCanvasNodeOptions,
   ) {
-    super({ canvasBounds: bounds, ...providedOptions });
+    super(combineOptions<CanvasNodeOptions>({}, providedOptions, { canvasBounds: bounds }));
     this.model = model;
     this.sectionScale = sectionScale;
 

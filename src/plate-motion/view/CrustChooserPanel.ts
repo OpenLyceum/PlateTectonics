@@ -126,7 +126,7 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
     const a11y = strings.getPlateMotionA11yStrings().controls;
 
     const buttons = PLATE_TYPES.map((type) => {
-      const accessibleName = new DerivedProperty(
+      const accessibleNameProperty = new DerivedProperty(
         [a11y.crustPieceStringProperty, nameProperty(type)],
         (pattern: string, name: string) => pattern.replace("{{name}}", name),
       );
@@ -135,7 +135,7 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
         ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
         content: pieceContent(type),
         baseColor: PlateTectonicsColors.controlSurfaceColorProperty,
-        accessibleName,
+        accessibleName: accessibleNameProperty,
         accessibleHelpText: a11y.crustPieceHelpStringProperty,
         listener: () => {
           // Picks the piece up, or puts it back down if it was already in hand.
@@ -146,8 +146,8 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
       // Nothing to place once the boundary is running. Both sides being full is *not* a
       // reason to disable a piece: it can still be swapped onto either of them, which is
       // the comparison the screen is asking the user to make.
-      const enabled = new DerivedProperty([model.animationStartedProperty], (started: boolean) => !started);
-      enabled.link((value) => {
+      const enabledProperty = new DerivedProperty([model.animationStartedProperty], (started: boolean) => !started);
+      enabledProperty.link((value) => {
         button.enabled = value;
       });
 
@@ -155,7 +155,7 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
       // when they are waiting for it — so it is obvious at a glance what is in hand and
       // that pressing the piece again puts it down, rather than being a press that did
       // nothing.
-      const armedHere = new DerivedProperty(
+      const armedHereProperty = new DerivedProperty(
         [model.armedPlateTypeProperty],
         (armed: PlateType | null) => armed === type,
       );
@@ -163,13 +163,13 @@ export class CrustChooserPanel extends PlateTectonicsPanel {
         stroke: PlateTectonicsColors.dropZoneActiveColorProperty,
         lineWidth: 3,
         cornerRadius: 6,
-        visibleProperty: armedHere,
+        visibleProperty: armedHereProperty,
       });
 
       button.disposeEmitter.addListener(() => {
-        armedHere.dispose();
-        enabled.dispose();
-        accessibleName.dispose();
+        armedHereProperty.dispose();
+        enabledProperty.dispose();
+        accessibleNameProperty.dispose();
       });
 
       return { type, button, piece: new Node({ children: [highlight, button] }) };

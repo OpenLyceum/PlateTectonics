@@ -44,6 +44,7 @@
  */
 
 import { type Bounds2, Vector2, type Vector3 } from "scenerystack/dot";
+import { combineOptions, type StrictOmit } from "scenerystack/phet-core";
 import { CanvasNode, type CanvasNodeOptions, type Color } from "scenerystack/scenery";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import { EARTH_RADIUS_M, radialFromDirections, xRadialVector, zRadialVector } from "../model/EarthCurvature.js";
@@ -115,7 +116,7 @@ function hashNoise(i: number, j: number): number {
   return 2 * (value - Math.floor(value)) - 1;
 }
 
-export type EarthBlockNodeOptions = CanvasNodeOptions;
+export type EarthBlockNodeOptions = StrictOmit<CanvasNodeOptions, "canvasBounds">;
 
 export abstract class EarthBlockNode extends CanvasNode {
   protected readonly faceRenderer: QuadRenderer;
@@ -131,7 +132,7 @@ export abstract class EarthBlockNode extends CanvasNode {
   private exaggeration = 1;
 
   protected constructor(viewBounds: Bounds2, providedOptions?: EarthBlockNodeOptions) {
-    super({ canvasBounds: viewBounds, ...providedOptions });
+    super(combineOptions<CanvasNodeOptions>({}, providedOptions, { canvasBounds: viewBounds }));
 
     this.viewBounds = viewBounds;
     this.camera = SceneCamera.framing([], { viewBounds });

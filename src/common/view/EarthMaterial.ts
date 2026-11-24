@@ -18,6 +18,7 @@
  * Pure apart from those reads, and unit-tested in tests/EarthMaterial.test.ts.
  */
 
+import { roundSymmetric } from "scenerystack/dot";
 import { Color } from "scenerystack/scenery";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import {
@@ -103,7 +104,7 @@ function temperatureFill(temperatureK: number): Color {
 function combinedFill(densityKgM3: number, temperatureK: number): Color {
   const hot = temperatureFill(temperatureK);
   const shade = 1 - 0.55 * densityRatio(densityKgM3);
-  return new Color(Math.round(hot.r * shade), Math.round(hot.g * shade), Math.round(hot.b * shade), hot.a);
+  return new Color(roundSymmetric(hot.r * shade), roundSymmetric(hot.g * shade), roundSymmetric(hot.b * shade), hot.a);
 }
 
 /** Fill for rock, in whichever mode the user has selected. */

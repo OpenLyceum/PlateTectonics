@@ -33,6 +33,7 @@
  */
 
 import type { Vector3 } from "scenerystack/dot";
+import { roundSymmetric } from "scenerystack/dot";
 import type { Color } from "scenerystack/scenery";
 import type { SceneCamera } from "./SceneCamera.js";
 
@@ -114,9 +115,9 @@ export function lambertFactor(nx: number, ny: number, nz: number): number {
  * @internal Exported for unit tests; not part of the application API.
  */
 export function shadeToCSS(color: Color, factor: number): string {
-  const r = Math.round(Math.max(0, Math.min(255, color.r * factor)));
-  const g = Math.round(Math.max(0, Math.min(255, color.g * factor)));
-  const b = Math.round(Math.max(0, Math.min(255, color.b * factor)));
+  const r = roundSymmetric(Math.max(0, Math.min(255, color.r * factor)));
+  const g = roundSymmetric(Math.max(0, Math.min(255, color.g * factor)));
+  const b = roundSymmetric(Math.max(0, Math.min(255, color.b * factor)));
   return color.a >= 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${color.a})`;
 }
 

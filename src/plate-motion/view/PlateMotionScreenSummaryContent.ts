@@ -25,7 +25,7 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
     const a11y = strings.getPlateMotionA11yStrings();
     const motion = strings.getPlateMotionStrings();
 
-    const plates = new DerivedStringProperty(
+    const platesProperty = new DerivedStringProperty(
       [
         model.leftPlateTypeProperty,
         model.rightPlateTypeProperty,
@@ -58,7 +58,7 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
       },
     );
 
-    const motionDetails = new DerivedStringProperty(
+    const motionDetailsProperty = new DerivedStringProperty(
       [
         model.behaviorProperty,
         model.subductingSideProperty,
@@ -92,7 +92,7 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
       },
     );
 
-    const timeDetails = new DerivedStringProperty(
+    const timeDetailsProperty = new DerivedStringProperty(
       [
         model.timeMillionsOfYearsProperty,
         model.animationStartedProperty,
@@ -120,15 +120,22 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
 
     // Which mode is on decides what everything else on the screen does, so it is part of
     // the live description rather than something a reader has to go and check.
-    const modeDetails = new DerivedStringProperty(
+    const modeDetailsProperty = new DerivedStringProperty(
       [model.isManualModeProperty, a11y.modeAutomaticStringProperty, a11y.modeManualStringProperty],
       (manual: boolean, automatic: string, manualText: string) => (manual ? manualText : automatic),
     );
 
     const viewDetails = createSectionViewDescription(model.sectionView);
 
-    const currentDetails = new DerivedStringProperty(
-      [a11y.currentDetailsStringProperty, plates, motionDetails, modeDetails, timeDetails, viewDetails],
+    const currentDetailsProperty = new DerivedStringProperty(
+      [
+        a11y.currentDetailsStringProperty,
+        platesProperty,
+        motionDetailsProperty,
+        modeDetailsProperty,
+        timeDetailsProperty,
+        viewDetails,
+      ],
       (pattern: string, platesText: string, motionText: string, modeText: string, timeText: string, viewText: string) =>
         pattern
           .replace("{{plates}}", platesText)
@@ -141,17 +148,17 @@ export class PlateMotionScreenSummaryContent extends ScreenSummaryContent {
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: currentDetails,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
 
     this.disposeEmitter.addListener(() => {
-      currentDetails.dispose();
+      currentDetailsProperty.dispose();
       viewDetails.dispose();
-      modeDetails.dispose();
-      timeDetails.dispose();
-      motionDetails.dispose();
-      plates.dispose();
+      modeDetailsProperty.dispose();
+      timeDetailsProperty.dispose();
+      motionDetailsProperty.dispose();
+      platesProperty.dispose();
     });
   }
 }

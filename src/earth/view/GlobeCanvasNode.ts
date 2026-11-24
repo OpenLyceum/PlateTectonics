@@ -22,16 +22,15 @@
  * camera moves.
  */
 
-import type { CanvasNodeOptions } from "scenerystack/scenery";
 import type { GlobeProjection } from "../../common/GlobeProjection.js";
 import { GlobeFeaturePainter, type RingMode } from "../../common/view/GlobeFeaturePainter.js";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import type { EarthModel } from "../model/EarthModel.js";
-import { EarthCanvasNode } from "./EarthCanvasNode.js";
+import { EarthCanvasNode, type EarthCanvasNodeOptions } from "./EarthCanvasNode.js";
 
 const TWO_PI = 2 * Math.PI;
 
-export type GlobeCanvasNodeOptions = CanvasNodeOptions;
+export type GlobeCanvasNodeOptions = EarthCanvasNodeOptions;
 
 export class GlobeCanvasNode extends EarthCanvasNode {
   private readonly globe: GlobeProjection;

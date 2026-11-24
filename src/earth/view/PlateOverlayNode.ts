@@ -17,6 +17,7 @@
  */
 
 import { Multilink, PatternStringProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { roundSymmetric } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node, type NodeOptions, Text } from "scenerystack/scenery";
 import { ArrowNode, PhetFont } from "scenerystack/scenery-phet";
@@ -72,7 +73,7 @@ export class PlateOverlayNode extends Node {
       const velocity = PlateReconstruction.velocityAt(index, plate.labelLon, plate.labelLat);
       const label = createHaloText(plateNames[`${plate.code}StringProperty`] ?? plate.name, 11, true);
       const speed = new PatternStringProperty(plateLabelStrings.speedStringProperty, {
-        value: Math.round(velocity.speedMmPerYear),
+        value: roundSymmetric(velocity.speedMmPerYear),
       });
       const speedLabel = createHaloText(speed, 9, false);
       const arrow = new ArrowNode(0, 0, 0, 0, {

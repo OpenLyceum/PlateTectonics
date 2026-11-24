@@ -17,11 +17,11 @@
  */
 
 import type { Bounds2 } from "scenerystack/dot";
-import type { CanvasNodeOptions } from "scenerystack/scenery";
+import { roundSymmetric } from "scenerystack/dot";
 import type { MapProjection } from "../../common/MapProjection.js";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
 import type { EarthModel } from "../model/EarthModel.js";
-import { EarthCanvasNode, isSeamSegment, type RingMode } from "./EarthCanvasNode.js";
+import { EarthCanvasNode, type EarthCanvasNodeOptions, isSeamSegment, type RingMode } from "./EarthCanvasNode.js";
 
 /** Longitude jump (degrees) that means a polyline wrapped across the antimeridian. */
 const ANTIMERIDIAN_JUMP = 180;
@@ -41,7 +41,7 @@ function isSeamAt(coords: readonly number[], i: number): boolean {
 /** Longitude span above which a ring is treated as encircling a pole. */
 const CIRCUMPOLAR_SPAN_DEGREES = 300;
 
-export type MapCanvasNodeOptions = CanvasNodeOptions;
+export type MapCanvasNodeOptions = EarthCanvasNodeOptions;
 
 export class MapCanvasNode extends EarthCanvasNode {
   private readonly mapProjection: MapProjection;
@@ -179,11 +179,11 @@ export class MapCanvasNode extends EarthCanvasNode {
       this.reconstruction.transform(coords[i] as number, coords[i + 1] as number, frame);
 
       if (vertex === 0) {
-        originTurns = Math.round((centerLon - this.reconstruction.lon) / 360);
+        originTurns = roundSymmetric((centerLon - this.reconstruction.lon) / 360);
       }
       let lon = this.reconstruction.lon + (originTurns + turns) * 360;
       if (vertex > 0 && Math.abs(lon - previousLon) > ANTIMERIDIAN_JUMP) {
-        const correction = Math.round((previousLon - lon) / 360);
+        const correction = roundSymmetric((previousLon - lon) / 360);
         turns += correction;
         lon += correction * 360;
       }

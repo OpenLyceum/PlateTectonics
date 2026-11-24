@@ -41,7 +41,7 @@
  */
 
 import type { Property, TReadOnlyProperty } from "scenerystack/axon";
-import { type Bounds2, Matrix3, Vector2 } from "scenerystack/dot";
+import { type Bounds2, Matrix3, roundSymmetric, Vector2 } from "scenerystack/dot";
 import { DragListener, KeyboardListener, Node, type NodeOptions } from "scenerystack/scenery";
 import { PhetFont, RulerNode } from "scenerystack/scenery-phet";
 import PlateTectonicsColors from "../../PlateTectonicsColors.js";
@@ -192,7 +192,7 @@ export class SectionRulerNode extends Node {
     // between them and how many of them there is room to draw.
     const tickValues: string[] = [];
     for (let distanceM = 0; distanceM <= lengthM + 1; distanceM += majorTickM) {
-      tickValues.push(String(Math.round(distanceM / 1000)));
+      tickValues.push(String(roundSymmetric(distanceM / 1000)));
     }
 
     const body = new Node();

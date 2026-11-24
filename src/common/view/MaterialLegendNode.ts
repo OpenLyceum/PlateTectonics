@@ -40,7 +40,7 @@ export class MaterialLegendNode extends HBox {
       cornerRadius: 2,
     });
 
-    const rampFill = new DerivedProperty(
+    const rampFillProperty = new DerivedProperty(
       [
         colorModeProperty,
         PlateTectonicsColors.densityRampLowColorProperty,
@@ -53,7 +53,7 @@ export class MaterialLegendNode extends HBox {
         return new LinearGradient(0, 0, RAMP_WIDTH, 0).addColorStop(0, low).addColorStop(1, high);
       },
     );
-    rampFill.link((fill) => {
+    rampFillProperty.link((fill) => {
       ramp.fill = fill;
     });
 
@@ -62,18 +62,18 @@ export class MaterialLegendNode extends HBox {
 
     // The end labels change with the mode: "less dense" and "cooler" are the same end
     // of the strip only by coincidence of how the ramps were chosen.
-    const lowText = new DerivedProperty(
+    const lowTextProperty = new DerivedProperty(
       [colorModeProperty, material.lessDenseStringProperty, material.coolerStringProperty],
       (mode: ColorMode, lessDense: string, cooler: string) => (mode === "temperature" ? cooler : lessDense),
     );
-    const highText = new DerivedProperty(
+    const highTextProperty = new DerivedProperty(
       [colorModeProperty, material.moreDenseStringProperty, material.hotterStringProperty],
       (mode: ColorMode, moreDense: string, hotter: string) => (mode === "temperature" ? hotter : moreDense),
     );
-    lowText.link((text) => {
+    lowTextProperty.link((text) => {
       lowLabel.string = text;
     });
-    highText.link((text) => {
+    highTextProperty.link((text) => {
       highLabel.string = text;
     });
 
@@ -84,16 +84,16 @@ export class MaterialLegendNode extends HBox {
     super(options);
 
     // In "both" mode neither ramp alone describes the picture, so say nothing.
-    const visibility = new DerivedProperty([colorModeProperty], (mode: ColorMode) => mode !== "both");
-    visibility.link((visible) => {
+    const visibilityProperty = new DerivedProperty([colorModeProperty], (mode: ColorMode) => mode !== "both");
+    visibilityProperty.link((visible) => {
       this.visible = visible;
     });
 
     this.disposeEmitter.addListener(() => {
-      visibility.dispose();
-      highText.dispose();
-      lowText.dispose();
-      rampFill.dispose();
+      visibilityProperty.dispose();
+      highTextProperty.dispose();
+      lowTextProperty.dispose();
+      rampFillProperty.dispose();
     });
   }
 }
